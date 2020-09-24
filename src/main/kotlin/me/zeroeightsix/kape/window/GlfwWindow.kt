@@ -1,7 +1,6 @@
 package me.zeroeightsix.kape.window
 
 import me.zeroeightsix.kape.math.Vec2i
-import me.zeroeightsix.kape.unreachable
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
@@ -52,7 +51,7 @@ open class GlfwWindow private constructor(protected val handle: Long) {
         var noInit = false
 
         var resizable: Boolean
-            get() = unreachable()
+            get() = hints.getOrDefault(GLFW_RESIZABLE, GLFW_TRUE) == GLFW_TRUE
             set(value) = windowHint(GLFW_RESIZABLE, value.asGlfwBool())
 
         var size: Vec2i = Vec2i(300, 300)
