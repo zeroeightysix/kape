@@ -1,3 +1,4 @@
+import me.zeroeightsix.kape.gl.KapeGL
 import me.zeroeightsix.kape.window.GlfwWindow
 
 fun main() {
@@ -10,7 +11,14 @@ fun main() {
         }
     }.getOrThrow()
 
-    Thread.sleep(5000)
+    window.makeContextCurrent()
+    KapeGL.setUp()
+    while (!window.shouldClose) {
+        KapeGL.clear()
+
+        window.update()
+    }
+
     println("Exiting")
     window.destroy()
     GlfwWindow.terminate()

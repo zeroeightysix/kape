@@ -38,6 +38,10 @@ open class GlfwWindow private constructor(protected val handle: Long) : Window {
         glfwPollEvents()
     }
 
+    fun makeContextCurrent() {
+        glfwMakeContextCurrent(this.handle)
+    }
+
     fun freeAndDestroy() {
         freeCallbacks()
         destroy()
