@@ -21,10 +21,22 @@ private fun KeyCallback.asGlfwKeyCallback() = object : GLFWKeyCallback() {
 
 private fun Boolean.asGlfwBool() = if (this) GLFW_TRUE else GLFW_FALSE
 
-open class GlfwWindow private constructor(protected val handle: Long) {
+open class GlfwWindow private constructor(protected val handle: Long) : Window {
 
     fun freeCallbacks() = glfwFreeCallbacks(this.handle)
     fun destroy() = glfwDestroyWindow(this.handle)
+
+    private var _shouldClose: Boolean = false
+
+    override val shouldClose: Boolean
+        get() = _shouldClose
+
+    override fun update() {
+        this._shouldClose = glfwWindowShouldClose(this.handle)
+
+        glfwSwapBuffers(this.handle)
+        glfwPollEvents()
+    }
 
     fun freeAndDestroy() {
         freeCallbacks()
