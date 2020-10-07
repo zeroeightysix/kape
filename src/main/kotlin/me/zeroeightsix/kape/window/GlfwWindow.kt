@@ -1,6 +1,7 @@
 package me.zeroeightsix.kape.window
 
 import me.zeroeightsix.kape.math.Vec2i
+import me.zeroeightsix.kape.math.has
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
@@ -8,18 +9,22 @@ import org.lwjgl.system.MemoryUtil.NULL
 
 /**
  * A generic key callback. Returns true if the action was handled, and thus any other key callbacks should not take action.
- *
- * Arguments: window, key, scancode, action, mods
  */
-typealias KeyCallback = (Long, Int, Int, Int, Int) -> Boolean
+typealias KeyCallback = (window: Long, key: Int, scancode: Int, action: GlfwWindow.KeyAction, mods: GlfwWindow.KeyMods) -> Boolean
 
 private fun KeyCallback.asGlfwKeyCallback() = object : GLFWKeyCallback() {
     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        this@asGlfwKeyCallback(window, key, scancode, action, mods)
+        this@asGlfwKeyCallback(window, key, scancode, action.glfwAction ?: error("Invalid GLFW key action"), mods.glfwMods)
     }
 }
 
 private fun Boolean.asGlfwBool() = if (this) GLFW_TRUE else GLFW_FALSE
+
+private val Int.glfwAction
+    get() = GlfwWindow.KeyAction.fromInt(this)
+
+private val Int.glfwMods
+    get() = GlfwWindow.KeyMods(this)
 
 open class GlfwWindow private constructor(protected val handle: Long) : Window {
 
@@ -128,6 +133,38 @@ open class GlfwWindow private constructor(protected val handle: Long) : Window {
 
         private fun Long?.asGlfwNullable() = this ?: NULL
 
+    }
+    
+    enum class KeyAction(val glfw: Int) {
+        PRESS(GLFW_PRESS), RELEASE(GLFW_RELEASE), REPEAT(GLFW_REPEAT);
+
+        companion object {
+            private val actionMap = values().map { it.glfw to it }.toMap()
+            
+            fun fromInt(int: Int): KeyAction? = actionMap[int]
+        }
+    }
+
+    data class KeyMods(
+        val shift: Boolean,
+        val control: Boolean,
+        val alt: Boolean,
+        val `super`: Boolean,
+        val capsLock: Boolean,
+        val numLock: Boolean
+    ) {
+        constructor(glfw: Int) : this(
+            glfw has GLFW_MOD_SHIFT,
+            glfw has GLFW_MOD_CONTROL,
+            glfw has GLFW_MOD_ALT,
+            glfw has GLFW_MOD_SUPER,
+            glfw has GLFW_MOD_CAPS_LOCK,
+            glfw has GLFW_MOD_NUM_LOCK
+        )
+        
+        // Common combination getters
+        val isControlAlt: Boolean = control && alt
+        val isControlAltShift: Boolean = isControlAlt && shift
     }
 
     companion object {

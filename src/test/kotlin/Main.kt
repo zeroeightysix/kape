@@ -5,9 +5,9 @@ fun main() {
 
     val window = GlfwWindow.createWindow {
         resizable = false
-        keyCallback = { l: Long, i: Int, i1: Int, i2: Int, i3: Int ->
-            println("extra callback")
-            false
+        keyCallback = { _, _, _, _, _->
+            println("Key callback called")
+            false // Action was not consumed
         }
     }.getOrThrow()
 
@@ -20,7 +20,7 @@ fun main() {
     }
 
     println("Exiting")
-    window.destroy()
+    window.freeAndDestroy()
     GlfwWindow.terminate()
 
 }
