@@ -1,5 +1,5 @@
 import me.zeroeightsix.kape.gl.KapeGL
-import me.zeroeightsix.kape.window.GlfwWindow
+import me.zeroeightsix.kape.native.GlfwWindow
 
 fun main() {
 

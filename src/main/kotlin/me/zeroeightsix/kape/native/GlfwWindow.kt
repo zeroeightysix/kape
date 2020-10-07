@@ -1,4 +1,4 @@
-package me.zeroeightsix.kape.window
+package me.zeroeightsix.kape.native
 
 import me.zeroeightsix.kape.math.Vec2i
 import me.zeroeightsix.kape.math.has

@@ -1,4 +1,4 @@
-package me.zeroeightsix.kape.window
+package me.zeroeightsix.kape.native
 
 interface Window {
 
