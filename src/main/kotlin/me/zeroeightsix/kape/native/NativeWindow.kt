@@ -1,9 +1,9 @@
 package me.zeroeightsix.kape.native
 
-interface Window {
+interface NativeWindow {
 
     /**
-     * Updates this [Window]. Updating might imply polling buffers, polling close state, etc.
+     * Updates this [NativeWindow]. Updating might imply polling buffers, polling close state, etc.
      */
     fun update() = Unit
 

@@ -26,7 +26,7 @@ private val Int.glfwAction
 private val Int.glfwMods
     get() = GlfwWindow.KeyMods(this)
 
-open class GlfwWindow private constructor(protected val handle: Long) : Window {
+open class GlfwWindow private constructor(protected val handle: Long) : NativeWindow {
 
     fun freeCallbacks() = glfwFreeCallbacks(this.handle)
     fun destroy() = glfwDestroyWindow(this.handle)
