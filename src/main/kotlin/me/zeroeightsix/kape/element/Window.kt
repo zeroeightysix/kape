@@ -1,5 +1,8 @@
 package me.zeroeightsix.kape.element
 
-class Window(override val idStack: ArrayDeque<ID> = ArrayDeque()) : HasIDStack {
+import me.zeroeightsix.kape.element.layer.ForkOrderedLayer
+import me.zeroeightsix.kape.element.layer.Layer
+
+class Window(parent: Layer? = null) : ForkOrderedLayer(parent) {
 
 }

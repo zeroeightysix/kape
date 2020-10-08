@@ -1,10 +1,19 @@
 package me.zeroeightsix.kape
 
-import me.zeroeightsix.kape.element.IDMap
-import me.zeroeightsix.kape.element.Window
+import me.zeroeightsix.kape.element.layer.ForkOrderedLayer
 
-class Kape(private val windowMap: IDMap<Window>) : IDMap<Window> by windowMap {
+typealias ID = Any
+
+class Kape() : ForkOrderedLayer() {
 
 
 
 }
+
+/**
+ * An instance of [Kape] where the default constructor parameters was used.
+ *
+ * Use this instance if you wish to co-operate with other projects that might be using Kape in the same environment,
+ * unless the environment provides an instance of Kape.
+ */
+val kapeCommon = Kape()

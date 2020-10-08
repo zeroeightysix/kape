@@ -1,5 +1,7 @@
 import me.zeroeightsix.kape.gl.KapeGL
+import me.zeroeightsix.kape.kapeCommon
 import me.zeroeightsix.kape.native.GlfwWindow
+import me.zeroeightsix.kape.window
 
 fun main() {
 
@@ -13,8 +15,13 @@ fun main() {
 
     window.makeContextCurrent()
     KapeGL.setUp()
+    val kape = kapeCommon
     while (!window.shouldClose) {
         KapeGL.clear()
+        
+        kape.window {
+
+        }
 
         window.update()
     }
