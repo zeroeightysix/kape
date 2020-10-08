@@ -10,3 +10,5 @@ internal fun <T : Layer> Layer.forkAndScope(child: T, id: ID, block: T.() -> Uni
 
 fun Layer.window(title: String = "Kape window", id: ID = title, block: Window.() -> Unit) =
     forkAndScope(Window(this), id, block)
+
+fun destroyAll(vararg toDestroy: Destroy) = toDestroy.forEach(Destroy::destroy)

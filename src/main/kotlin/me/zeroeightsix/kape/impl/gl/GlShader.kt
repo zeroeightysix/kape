@@ -13,7 +13,7 @@ class GlShader: Shader {
     fun queryCompileError(): String? {
         val status = newBoolRef()
         glGetShaderiv(pointer, GL_COMPILE_STATUS, status)
-        return if (status()) {
+        return if (!status()) {
             glGetShaderInfoLog(pointer)
         } else
             null
