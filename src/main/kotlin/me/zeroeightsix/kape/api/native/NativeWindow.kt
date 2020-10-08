@@ -1,4 +1,4 @@
-package me.zeroeightsix.kape.native
+package me.zeroeightsix.kape.api.native
 
 interface NativeWindow {
 

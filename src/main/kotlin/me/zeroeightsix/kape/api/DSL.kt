@@ -1,7 +1,7 @@
-package me.zeroeightsix.kape
+package me.zeroeightsix.kape.api
 
-import me.zeroeightsix.kape.element.Window
-import me.zeroeightsix.kape.element.layer.Layer
+import me.zeroeightsix.kape.api.element.Window
+import me.zeroeightsix.kape.api.element.layer.Layer
 
 internal fun <T : Layer> Layer.forkAndScope(child: T, id: ID, block: T.() -> Unit) {
     this.fork(child, id)

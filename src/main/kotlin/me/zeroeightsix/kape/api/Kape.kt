@@ -1,6 +1,6 @@
-package me.zeroeightsix.kape
+package me.zeroeightsix.kape.api
 
-import me.zeroeightsix.kape.element.layer.ForkOrderedLayer
+import me.zeroeightsix.kape.api.element.layer.ForkOrderedLayer
 
 typealias ID = Any
 

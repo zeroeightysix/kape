@@ -1,4 +1,4 @@
-package me.zeroeightsix.kape.gl
+package me.zeroeightsix.kape.api.gl
 
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11

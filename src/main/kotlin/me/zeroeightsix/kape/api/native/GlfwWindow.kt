@@ -1,7 +1,7 @@
-package me.zeroeightsix.kape.native
+package me.zeroeightsix.kape.api.native
 
-import me.zeroeightsix.kape.math.Vec2i
-import me.zeroeightsix.kape.math.has
+import me.zeroeightsix.kape.api.math.Vec2i
+import me.zeroeightsix.kape.api.math.has
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback

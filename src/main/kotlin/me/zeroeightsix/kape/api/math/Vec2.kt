@@ -1,4 +1,4 @@
-package me.zeroeightsix.kape.math
+package me.zeroeightsix.kape.api.math
 
 class Vec2<T : Number>(val x: T, val y: T)
 

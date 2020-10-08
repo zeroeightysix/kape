@@ -1,6 +1,6 @@
-package me.zeroeightsix.kape.element.layer
+package me.zeroeightsix.kape.api.element.layer
 
-import me.zeroeightsix.kape.ID
+import me.zeroeightsix.kape.api.ID
 
 typealias LayerMap = LinkedHashMap<ID, Layer>
 
@@ -36,8 +36,6 @@ open class ForkOrderedLayer(override val parent: Layer? = null) : Layer {
         }
     }
 
-    fun forkSame(child: ForkOrderedLayer = ForkOrderedLayer(this)) = fork(child)
-
 }
 
 internal class JoinedLayer(private val first: Layer, private val second: Layer) : ForkOrderedLayer() {
@@ -49,10 +47,6 @@ internal class JoinedLayer(private val first: Layer, private val second: Layer) 
     }
 
     override val parent: Layer? = first.parent
-    override val children: LayerMap = run {
-        val temp = LayerMap(first.children)
-        temp.putAll(second.children)
-        temp
-    }
+    override val children: LayerMap = this.first.children.toMutableMap().also { it.putAll(this.second.children) } as LayerMap
 
 }
