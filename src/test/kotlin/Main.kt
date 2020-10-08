@@ -1,7 +1,6 @@
 import me.zeroeightsix.kape.api.destroyAll
 import me.zeroeightsix.kape.api.gl.KapeGL
 import me.zeroeightsix.kape.api.kapeCommon
-import me.zeroeightsix.kape.api.window
 import me.zeroeightsix.kape.impl.gl.VAO
 import me.zeroeightsix.kape.impl.gl.VBO
 import me.zeroeightsix.kape.impl.gl.standardProgram
@@ -14,16 +13,17 @@ import org.lwjgl.opengl.GL20
 fun main() {
 
     val window = GlfwWindow.createWindow {
-        resizable = false
+        resizable = true
         keyCallback = { _, _, _, _, _->
             println("Key callback called")
             false // Action was not consumed
         }
+        resizeCallback = standardResizeCallback
     }.getOrThrow()
 
     window.makeContextCurrent()
     KapeGL.setUp()
-    val kape = kapeCommon
+//    val kape = kapeCommon
 
     val vertices = floatArrayOf(
         -0.5f, -0.5f, 0.0f,  // left

@@ -5,7 +5,9 @@ import me.zeroeightsix.kape.api.math.has
 import me.zeroeightsix.kape.api.native.NativeWindow
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback
 import org.lwjgl.glfw.GLFWKeyCallback
+import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil.NULL
 
 /**
@@ -13,10 +15,16 @@ import org.lwjgl.system.MemoryUtil.NULL
  */
 typealias KeyCallback = (window: Long, key: Int, scancode: Int, action: GlfwWindow.KeyAction, mods: GlfwWindow.KeyMods) -> Boolean
 
+typealias ResizeCallback = (window: Long, width: Int, height: Int) -> Unit
+
 private fun KeyCallback.asGlfwKeyCallback() = object : GLFWKeyCallback() {
     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
         this@asGlfwKeyCallback(window, key, scancode, action.glfwAction ?: error("Invalid GLFW key action"), mods.glfwMods)
     }
+}
+
+private fun ResizeCallback.asGlfwResizeCallback() = object : GLFWFramebufferSizeCallback() {
+    override fun invoke(window: Long, width: Int, height: Int) = this@asGlfwResizeCallback(window, width, height)
 }
 
 private fun Boolean.asGlfwBool() = if (this) GLFW_TRUE else GLFW_FALSE
@@ -100,6 +108,11 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
          */
         var keyCallback: KeyCallback? = null
 
+        var resizeCallback: ResizeCallback? = null
+        val standardResizeCallback: ResizeCallback = { _, w, h ->
+            GL11.glViewport(0, 0, w, h)
+        }
+
         fun defaults(): Builder {
             resizable = true
             return this
@@ -125,6 +138,9 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
             val window = GlfwWindow(handle)
 
             glfwSetKeyCallback(handle, window.wrapKeyCallback(this.keyCallback).asGlfwKeyCallback())
+            this.resizeCallback?.let { callback ->
+                glfwSetFramebufferSizeCallback(handle, callback.asGlfwResizeCallback())
+            }
 
             if (show)
                 glfwShowWindow(handle)
