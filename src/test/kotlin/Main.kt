@@ -1,6 +1,6 @@
 import me.zeroeightsix.kape.api.gl.KapeGL
 import me.zeroeightsix.kape.api.kapeCommon
-import me.zeroeightsix.kape.api.native.GlfwWindow
+import me.zeroeightsix.kape.impl.native.GlfwWindow
 import me.zeroeightsix.kape.api.window
 
 fun main() {
