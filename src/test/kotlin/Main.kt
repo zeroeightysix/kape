@@ -57,7 +57,8 @@ fun main() {
         window.update()
     }
 
-    destroyAll(vao, vbo, program)
+    window.freeCallbacks()
+    destroyAll(vao, vbo, program, window)
 
     println("Exiting")
     window.freeAndDestroy()

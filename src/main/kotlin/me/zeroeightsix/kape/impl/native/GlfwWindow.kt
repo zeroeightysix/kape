@@ -1,5 +1,6 @@
 package me.zeroeightsix.kape.impl.native
 
+import me.zeroeightsix.kape.api.Destroy
 import me.zeroeightsix.kape.api.math.Vec2i
 import me.zeroeightsix.kape.api.math.has
 import me.zeroeightsix.kape.api.native.NativeWindow
@@ -35,10 +36,10 @@ private val Int.glfwAction
 private val Int.glfwMods
     get() = GlfwWindow.KeyMods(this)
 
-open class GlfwWindow private constructor(protected val handle: Long) : NativeWindow {
+open class GlfwWindow private constructor(protected val handle: Long) : NativeWindow, Destroy {
 
     fun freeCallbacks() = glfwFreeCallbacks(this.handle)
-    fun destroy() = glfwDestroyWindow(this.handle)
+    override fun destroy() = glfwDestroyWindow(this.handle)
 
     private var _shouldClose: Boolean = false
 
