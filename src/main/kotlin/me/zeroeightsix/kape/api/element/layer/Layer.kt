@@ -9,6 +9,8 @@ interface Layer<P> {
     val parent: Layer<P>?
     val children: LayerMap<P>
 
+    val context: P
+
     /**
      * Creates a new [Layer] with `this` as parent, and adds it to this layer's children.
      */
@@ -23,7 +25,7 @@ interface Layer<P> {
 /**
  * A [Layer] with children ordered in the order they were forked in.
  */
-open class ForkOrderedLayer<P>(override val parent: Layer<P>? = null) : Layer<P> {
+open class ForkOrderedLayer<P>(override val parent: Layer<P>? = null, override val context: P) : Layer<P> {
 
     override val children: LayerMap<P> = LayerMap()
 
@@ -31,22 +33,9 @@ open class ForkOrderedLayer<P>(override val parent: Layer<P>? = null) : Layer<P>
         assert(child.parent === this) {
             "Tried to fork layer with child with a parent that is not this layer"
         }
-        children.computeIfPresent(id) { _, layer ->
-            JoinedLayer(layer, child)
-        }
+        if (children[id] != null)
+            error("Can not fork with an ID that already has a layer attached")
+        children[id] = child
     }
-
-}
-
-internal class JoinedLayer<P>(private val first: Layer<P>, private val second: Layer<P>) : ForkOrderedLayer<P>() {
-
-    init {
-        assert(first.parent == second.parent) {
-            "Attempt to join layers with differing parents"
-        }
-    }
-
-    override val parent: Layer<P>? = first.parent
-    override val children: LayerMap<P> = this.first.children.toMutableMap().also { it.putAll(this.second.children) } as LayerMap<P>
 
 }
