@@ -1,11 +1,13 @@
 package me.zeroeightsix.kape.impl.gl
 
 import me.zeroeightsix.kape.api.Destroy
+import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.gl.Shader
 import me.zeroeightsix.kape.api.gl.ShaderProgram
 import org.lwjgl.opengl.GL20.*
 
 class GlShaderProgram : ShaderProgram {
+    override val bindTypeId: ID = GlShaderProgram::class
 
     private val pointer: Int
 
@@ -39,8 +41,8 @@ class GlShaderProgram : ShaderProgram {
 
     private fun useProgram(pointer: Int) = glUseProgram(pointer)
 
-    override fun use() = useProgram(this.pointer)
-    override fun unUse() = useProgram(0)
+    override fun bind() = useProgram(this.pointer)
+    override fun resetBind() = useProgram(0)
 
     override fun destroy() {
         glDeleteProgram(this.pointer)

@@ -1,5 +1,6 @@
 package me.zeroeightsix.kape.api.gl
 
+import me.zeroeightsix.kape.api.Bind
 import me.zeroeightsix.kape.api.Destroy
 import org.lwjgl.opengl.GL32
 
@@ -13,13 +14,4 @@ enum class ShaderType(val glType: Int) {
     FRAGMENT_SHADER(GL32.GL_FRAGMENT_SHADER)
 }
 
-interface ShaderProgram : Destroy {
-    fun use()
-    fun unUse()
-    
-    fun useScoped(block: () -> Unit) {
-        use()
-        block()
-        unUse()
-    }
-}
+interface ShaderProgram : Destroy, Bind

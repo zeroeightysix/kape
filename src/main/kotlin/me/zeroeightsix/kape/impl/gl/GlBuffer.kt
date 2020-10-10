@@ -1,5 +1,6 @@
 package me.zeroeightsix.kape.impl.gl
 
+import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.gl.Buffer
 import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL30
@@ -29,7 +30,7 @@ abstract class GlBuffer : Buffer {
         this.bound = true
     }
 
-    override fun unBind() {
+    override fun resetBind() {
         bind(0)
         this.bound = false
     }
@@ -41,10 +42,14 @@ abstract class GlBuffer : Buffer {
 }
 
 class VertexBufferObject : GlBuffer() {
+    override val bindTypeId: ID = VertexBufferObject::class
+
     override val type: Int = GL_ARRAY_BUFFER
 }
 
 class VertexArrayObject : Buffer {
+    override val bindTypeId: ID = VertexArrayObject::class
+
     private val pointer: Int
     private var bound = false
 
@@ -63,7 +68,7 @@ class VertexArrayObject : Buffer {
         this.bound = true
     }
 
-    override fun unBind() {
+    override fun resetBind() {
         bind(0)
         this.bound = false
     }
