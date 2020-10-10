@@ -1,7 +1,7 @@
 package me.zeroeightsix.kape.impl.element.layer
 
 import me.zeroeightsix.kape.api.ID
-import me.zeroeightsix.kape.api.element.Context
+import me.zeroeightsix.kape.api.context.Context
 import me.zeroeightsix.kape.api.element.PrimitiveType
 import me.zeroeightsix.kape.api.element.layer.Layer
 import me.zeroeightsix.kape.api.element.layer.LayerRenderer

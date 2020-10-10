@@ -1,5 +1,8 @@
 import me.zeroeightsix.kape.api.destroyAll
+import me.zeroeightsix.kape.api.element.lineTo
 import me.zeroeightsix.kape.api.kapeCommon
+import me.zeroeightsix.kape.api.math.Vec2f
+import me.zeroeightsix.kape.api.window
 import me.zeroeightsix.kape.impl.gl.KapeGL
 import me.zeroeightsix.kape.impl.gl.VAO
 import me.zeroeightsix.kape.impl.gl.VBO
@@ -53,6 +56,10 @@ fun main() {
                 vao.bindScoped {
                     GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3)
                 }
+            }
+
+            window {
+                this.context += Vec2f(0f, 0f) lineTo Vec2f(1f, 1f)
             }
 
             window.update()

@@ -27,6 +27,4 @@ open class GlPrimitive(private val type: PrimitiveType, override val vertices: A
     override val primitiveType: Int = this.type.gl
 }
 
-class Context {
-
-}
+infix fun Vertex.lineTo(to: Vertex) = GlPrimitive(PrimitiveType.LINES, arrayOf(this, to))
