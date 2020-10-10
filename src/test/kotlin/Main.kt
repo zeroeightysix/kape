@@ -1,6 +1,5 @@
 import me.zeroeightsix.kape.api.destroyAll
-import me.zeroeightsix.kape.api.gl.KapeGL
-import me.zeroeightsix.kape.api.kapeCommon
+import me.zeroeightsix.kape.impl.gl.KapeGL
 import me.zeroeightsix.kape.impl.gl.VAO
 import me.zeroeightsix.kape.impl.gl.VBO
 import me.zeroeightsix.kape.impl.gl.standardProgram
@@ -61,7 +60,6 @@ fun main() {
     destroyAll(vao, vbo, program, window)
 
     println("Exiting")
-    window.freeAndDestroy()
     GlfwWindow.terminate()
 
 }
