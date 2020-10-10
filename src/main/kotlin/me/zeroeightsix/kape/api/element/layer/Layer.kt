@@ -2,17 +2,17 @@ package me.zeroeightsix.kape.api.element.layer
 
 import me.zeroeightsix.kape.api.ID
 
-typealias LayerMap = LinkedHashMap<ID, Layer>
+typealias LayerMap<P> = LinkedHashMap<ID, Layer<P>>
 
-interface Layer {
+interface Layer<P> {
     
-    val parent: Layer?
-    val children: LayerMap
+    val parent: Layer<P>?
+    val children: LayerMap<P>
 
     /**
      * Creates a new [Layer] with `this` as parent, and adds it to this layer's children.
      */
-    fun fork(child: Layer, id: ID = child)
+    fun fork(child: Layer<P>, id: ID = child)
 
     fun bringToFront(id: ID) {
         this.children[id] = this.children.remove(id) ?: return
@@ -23,11 +23,11 @@ interface Layer {
 /**
  * A [Layer] with children ordered in the order they were forked in.
  */
-open class ForkOrderedLayer(override val parent: Layer? = null) : Layer {
+open class ForkOrderedLayer<P>(override val parent: Layer<P>? = null) : Layer<P> {
 
-    override val children: LayerMap = LayerMap()
+    override val children: LayerMap<P> = LayerMap()
 
-    override fun fork(child: Layer, id: ID) {
+    override fun fork(child: Layer<P>, id: ID) {
         assert(child.parent === this) {
             "Tried to fork layer with child with a parent that is not this layer"
         }
@@ -38,7 +38,7 @@ open class ForkOrderedLayer(override val parent: Layer? = null) : Layer {
 
 }
 
-internal class JoinedLayer(private val first: Layer, private val second: Layer) : ForkOrderedLayer() {
+internal class JoinedLayer<P>(private val first: Layer<P>, private val second: Layer<P>) : ForkOrderedLayer<P>() {
 
     init {
         assert(first.parent == second.parent) {
@@ -46,7 +46,7 @@ internal class JoinedLayer(private val first: Layer, private val second: Layer) 
         }
     }
 
-    override val parent: Layer? = first.parent
-    override val children: LayerMap = this.first.children.toMutableMap().also { it.putAll(this.second.children) } as LayerMap
+    override val parent: Layer<P>? = first.parent
+    override val children: LayerMap<P> = this.first.children.toMutableMap().also { it.putAll(this.second.children) } as LayerMap<P>
 
 }

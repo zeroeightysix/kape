@@ -3,12 +3,12 @@ package me.zeroeightsix.kape.api
 import me.zeroeightsix.kape.api.element.Window
 import me.zeroeightsix.kape.api.element.layer.Layer
 
-internal fun <T : Layer> Layer.forkAndScope(child: T, id: ID, block: T.() -> Unit) {
+internal fun <P, T : Layer<P>> Layer<P>.forkAndScope(child: T, id: ID, block: T.() -> Unit) {
     this.fork(child, id)
     child.block()
 }
 
-fun Layer.window(title: String = "Kape window", id: ID = title, block: Window.() -> Unit) =
+fun <P> Layer<P>.window(title: String = "Kape window", id: ID = title, block: Window<P>.() -> Unit) =
     forkAndScope(Window(this), id, block)
 
 fun destroyAll(vararg toDestroy: Destroy) = toDestroy.forEach(Destroy::destroy)

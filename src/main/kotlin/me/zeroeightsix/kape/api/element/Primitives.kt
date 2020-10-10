@@ -26,3 +26,7 @@ enum class PrimitiveType(val gl: Int) {
 open class GlPrimitive(private val type: PrimitiveType, override val vertices: Array<Vertex>) : Primitive {
     override val primitiveType: Int = this.type.gl
 }
+
+class Context {
+
+}

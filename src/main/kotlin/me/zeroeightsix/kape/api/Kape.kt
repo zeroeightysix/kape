@@ -6,7 +6,7 @@ import me.zeroeightsix.kape.impl.element.layer.GlLayerRenderer
 
 typealias ID = Any
 
-class Kape(val renderer: LayerRenderer) : ForkOrderedLayer() {
+class Kape<P>(private val renderer: LayerRenderer<P>) : ForkOrderedLayer<P>() {
 
     private val bindStackMap = mutableMapOf<ID, ArrayDeque<Bind>>()
 
