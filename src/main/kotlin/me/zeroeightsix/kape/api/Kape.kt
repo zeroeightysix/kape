@@ -7,32 +7,17 @@ import me.zeroeightsix.kape.impl.element.layer.GlLayerRenderer
 
 typealias ID = Any
 
-class Kape<P>(private val renderer: LayerRenderer<P>, val contextSupplier: () -> P) : ForkOrderedLayer<P>(context = contextSupplier()) {
+class Kape<P>(
+    private val rendererSupplier: (Kape<P>) -> LayerRenderer<P>,
+    val bindStack: BindStack = BasicBindStack(),
+    val contextSupplier: () -> P
+) : ForkOrderedLayer<P>(context = contextSupplier()), BindStack by bindStack {
 
     private var _context: P = super.context
+    private val renderer = rendererSupplier(this)
 
     override val context: P
         get() = this._context
-
-    private val bindStackMap = mutableMapOf<ID, ArrayDeque<Bind>>()
-
-    private fun getBindStack(bind: Bind) = bindStackMap.getOrPut(bind.bindTypeId) { ArrayDeque() }
-
-    fun Bind.bindScoped(block: () -> Unit) {
-        val stack = getBindStack(this)
-
-        stack.add(this)
-        this.bind()
-
-        block()
-
-        stack.removeLast()
-        val last = stack.lastOrNull()
-        if (last != null)
-            last.bind()
-        else
-            this.resetBind()
-    }
 
     fun render() {
         renderer.render(this)
@@ -47,9 +32,9 @@ class Kape<P>(private val renderer: LayerRenderer<P>, val contextSupplier: () ->
 }
 
 /**
- * An instance of [Kape] where the default constructor parameters was used.
+ * An instance of [Kape] using the inbuilt implementations of context and renderer.
  *
  * Use this instance if you wish to co-operate with other projects that might be using Kape in the same environment,
  * unless the environment provides an instance of Kape.
  */
-val kapeCommon = Kape(GlLayerRenderer()) { Context() }
+val kapeCommon = Kape({ GlLayerRenderer(bindStack = it) }) { Context() }

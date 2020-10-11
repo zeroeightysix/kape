@@ -1,26 +1,33 @@
 package me.zeroeightsix.kape.impl.element.layer
 
-import me.zeroeightsix.kape.api.Destroy
-import me.zeroeightsix.kape.api.ID
+import me.zeroeightsix.kape.api.*
 import me.zeroeightsix.kape.api.context.Context
-import me.zeroeightsix.kape.api.destroyAll
 import me.zeroeightsix.kape.api.element.PrimitiveType
 import me.zeroeightsix.kape.api.element.Vertex
 import me.zeroeightsix.kape.api.element.layer.Layer
 import me.zeroeightsix.kape.api.element.layer.LayerRenderer
+import me.zeroeightsix.kape.api.gl.ShaderProgram
 import me.zeroeightsix.kape.impl.gl.VAO
 import me.zeroeightsix.kape.impl.gl.VBO
+import me.zeroeightsix.kape.impl.gl.standardProgram
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL20
 import java.util.*
 import kotlin.collections.HashMap
 
-class GlLayerRenderer : LayerRenderer<Context> {
+class GlLayerRenderer(
+    private val program: ShaderProgram = standardProgram,
+    private val bindStack: BindStack
+) : LayerRenderer<Context> {
     private val root = LayerGlNode()
 
     override fun render(layer: Layer<Context>, id: ID) {
-        root.render(id, layer)
+        with(bindStack) {
+            program.bindScoped {
+                root.render(id, layer)
+            }
+        }
     }
 
     private fun LayerGlNode.render(id: ID, layer: Layer<Context>) {
@@ -31,7 +38,7 @@ class GlLayerRenderer : LayerRenderer<Context> {
         }
 
         if (dirty) {
-            leaf.commit(layer.context)
+            leaf.commit(layer.context, bindStack)
         }
 
         leaf.draw()
@@ -51,7 +58,7 @@ private class LayerGlNode {
     /**
      * Clear data, redraw from context
      */
-    fun commit(context: Context) {
+    fun commit(context: Context, bindStack: BindStack) {
         val map = EnumMap<PrimitiveType, MutableList<Vertex>>(PrimitiveType::class.java)
         context.drawAll().map { primitive ->
             map.getOrPut(primitive.type) {
@@ -70,12 +77,16 @@ private class LayerGlNode {
                 vertexArray[i + 1] = vertex.y
             }
 
-            node.vao.bind()
-            node.vbo.bind()
-            GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexArray, GL15.GL_STATIC_DRAW)
+            with (bindStack) {
+                node.vao.bindScoped {
+                    node.vbo.bindScoped {
+                        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertexArray, GL15.GL_STATIC_DRAW)
 
-            GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0)
-            GL20.glEnableVertexAttribArray(0)
+                        GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0)
+                        GL20.glEnableVertexAttribArray(0)
+                    }
+                }
+            }
 
             type to node
         }.toMap()

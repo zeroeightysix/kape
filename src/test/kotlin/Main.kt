@@ -26,50 +26,24 @@ fun main() {
 
     window.makeContextCurrent()
     KapeGL.setUp()
-//    val kape = kapeCommon
-
-    val vertices = floatArrayOf(
-        -0.5f, -0.5f, 0.0f,  // left
-        0.5f, -0.5f, 0.0f,  // right
-        0.0f, 0.5f, 0.0f // top
-    )
-
-    val vao = VAO()
-    val vbo = VBO()
+    val kape = kapeCommon
     val program = standardProgram
 
     // set up vertices
-    with (kapeCommon) {
-        vao.bindScoped {
-            vbo.bindScoped {
-                GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, GL15.GL_STATIC_DRAW)
-
-                GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0)
-                GL20.glEnableVertexAttribArray(0)
-            }
-        }
-
+    with (kape) {
         while (!window.shouldClose) {
             KapeGL.clear()
 
-            program.bindScoped {
-                vao.bindScoped {
-                    GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3)
-                }
-            }
-
             window()
 
-            program.bindScoped {
-                this.renderAndRelease()
-            }
+            this.renderAndRelease()
             this.children.clear()
             window.update()
         }
     }
 
     window.freeCallbacks()
-    destroyAll(vao, vbo, program, window)
+    destroyAll(window)
 
     println("Exiting")
     GlfwWindow.terminate()
