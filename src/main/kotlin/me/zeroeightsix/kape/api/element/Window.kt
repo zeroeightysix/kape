@@ -3,23 +3,38 @@ package me.zeroeightsix.kape.api.element
 import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.context.Context
 import me.zeroeightsix.kape.api.element.layer.Layer
+import me.zeroeightsix.kape.api.math.times
+import me.zeroeightsix.kape.api.math.unaryMinus
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-const val halfCircle = PI
+const val quartCircle = PI / 2
 
 fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
     val ctx = this.context
     ctx.dirty()
 
     val time = System.currentTimeMillis() / 1000.0
-    val x1 = cos(time).toFloat()
-    val y1 = sin(time).toFloat()
-    val x2 = cos(time + halfCircle).toFloat()
-    val y2 = sin(time + halfCircle).toFloat()
+    val pos1 = Vertex(cos(time).toFloat(), sin(time).toFloat())
+    val pos2 = Vertex(cos(time + quartCircle).toFloat(), sin(time + quartCircle).toFloat())
+    val pos3 = -pos1
+    val pos4 = -pos2
 
     ctx draw {
-        Vertex(x1, y1) lineTo Vertex(x2, y2)
+        GlPrimitive(PrimitiveType.LINE_LOOP, arrayOf(
+            pos1,
+            pos2,
+            pos3,
+            pos4
+        ))
+    }
+
+    ctx draw {
+        GlPrimitive(PrimitiveType.LINE_LOOP, arrayOf(
+            pos1 * 0.7f,
+            pos2 * 0.5f,
+            pos3 * 0.3f
+        ))
     }
 }
