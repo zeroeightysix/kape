@@ -191,7 +191,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
 
         fun createWindow(options: Builder.() -> Unit = {}) = Builder().defaults().also(options).build()
 
-        fun terminate() {
+        fun terminateGlfw() {
             glfwTerminate()
             glfwSetErrorCallback(null)?.free()
         }
