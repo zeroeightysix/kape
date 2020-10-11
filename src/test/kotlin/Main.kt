@@ -60,7 +60,9 @@ fun main() {
 
             window()
 
-            this.render()
+            program.bindScoped {
+                this.renderAndRelease()
+            }
             this.children.clear()
             window.update()
         }

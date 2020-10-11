@@ -23,7 +23,7 @@ enum class PrimitiveType(val gl: Int) {
     TRIANGLE_FAN(GL_TRIANGLE_FAN);
 }
 
-open class GlPrimitive(private val type: PrimitiveType, override val vertices: Array<Vertex>) : Primitive {
+open class GlPrimitive(val type: PrimitiveType, override val vertices: Array<Vertex>) : Primitive {
     override val primitiveType: Int = this.type.gl
 }
 

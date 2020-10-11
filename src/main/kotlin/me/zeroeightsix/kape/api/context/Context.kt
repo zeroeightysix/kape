@@ -3,13 +3,18 @@ package me.zeroeightsix.kape.api.context
 import me.zeroeightsix.kape.api.element.GlPrimitive
 
 class Context : Reproducible<Context> {
-    infix fun draw(primitive: GlPrimitive) {
-//        println("adding prim $primitive")
-    }
+    /**
+     * Whether or not the context was modified compared to the previous iteration of contexts
+     */
+    var dirty = false
 
-    infix fun draw(supplier: () -> GlPrimitive) = this.draw(supplier())
+    private val queue = ArrayDeque<() -> GlPrimitive>()
 
-    operator fun plusAssign(primitive: GlPrimitive) = this.draw(primitive)
+    fun drawAll(): List<GlPrimitive> = queue.map { it() }
+
+    infix fun draw(supplier: () -> GlPrimitive) = queue.add(supplier).let { Unit }
+
+    operator fun plusAssign(supplier: () -> GlPrimitive) = this.draw(supplier)
 
     override fun createNext() = Context()
 }

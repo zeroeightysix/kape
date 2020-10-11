@@ -7,7 +7,12 @@ import me.zeroeightsix.kape.impl.element.layer.GlLayerRenderer
 
 typealias ID = Any
 
-class Kape<P>(private val renderer: LayerRenderer<P>, override val context: P) : ForkOrderedLayer<P>(context = context) {
+class Kape<P>(private val renderer: LayerRenderer<P>, val contextSupplier: () -> P) : ForkOrderedLayer<P>(context = contextSupplier()) {
+
+    private var _context: P = super.context
+
+    override val context: P
+        get() = this._context
 
     private val bindStackMap = mutableMapOf<ID, ArrayDeque<Bind>>()
 
@@ -33,6 +38,12 @@ class Kape<P>(private val renderer: LayerRenderer<P>, override val context: P) :
         renderer.render(this)
     }
 
+    fun renderAndRelease() {
+        render()
+        this.children.clear()
+        this._context = contextSupplier()
+    }
+
 }
 
 /**
@@ -41,4 +52,4 @@ class Kape<P>(private val renderer: LayerRenderer<P>, override val context: P) :
  * Use this instance if you wish to co-operate with other projects that might be using Kape in the same environment,
  * unless the environment provides an instance of Kape.
  */
-val kapeCommon = Kape(GlLayerRenderer(), Context())
+val kapeCommon = Kape(GlLayerRenderer()) { Context() }
