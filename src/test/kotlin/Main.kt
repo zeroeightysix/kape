@@ -3,7 +3,6 @@ import me.zeroeightsix.kape.api.kapeCommon
 import me.zeroeightsix.kape.impl.gl.KapeGL
 import me.zeroeightsix.kape.impl.native.GlfwWindow
 
-
 fun main() {
 
     val glfwWindow = GlfwWindow.createWindow {

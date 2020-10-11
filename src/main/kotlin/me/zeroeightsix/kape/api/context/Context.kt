@@ -8,6 +8,10 @@ class Context : Reproducible<Context> {
      */
     var dirty = false
 
+    fun dirty() {
+        dirty = true
+    }
+
     private val queue = ArrayDeque<() -> GlPrimitive>()
 
     fun drawAll(): List<GlPrimitive> = queue.map { it() }
