@@ -28,7 +28,28 @@ class Context(val windowState: WindowState) : Reproducible<Context> {
 interface WindowState {
     val mouse: Vec2d
     val charQueue: ArrayDeque<Char>
+    val keyQueue: ArrayDeque<KeyEvent>
     val size: Vec2i
 
+    data class KeyEvent(val key: Int, val scancode: Int, val action: KeyAction, val mods: KeyMods)
+
     fun clear()
+}
+
+enum class KeyAction {
+    PRESS, RELEASE, REPEAT
+}
+
+@Suppress("LeakingThis")
+open class KeyMods(
+    open val shift: Boolean,
+    open val control: Boolean,
+    open val alt: Boolean,
+    open val `super`: Boolean,
+    open val capsLock: Boolean,
+    open val numLock: Boolean
+) {
+    // Common combination getters
+    val isControlAlt: Boolean = control && alt
+    val isControlAltShift: Boolean = isControlAlt && shift
 }

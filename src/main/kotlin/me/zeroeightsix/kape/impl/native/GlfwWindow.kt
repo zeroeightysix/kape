@@ -13,6 +13,8 @@ import org.lwjgl.glfw.GLFWFramebufferSizeCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil.NULL
+import me.zeroeightsix.kape.api.context.KeyAction as ApiKeyAction
+import me.zeroeightsix.kape.api.context.KeyMods as ApiKeyMods
 
 /**
  * A generic key callback. Returns true if the action was handled, and thus any other key callbacks should not take action.
@@ -152,6 +154,20 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
                 previousResizeCallback(window, w, h)
                 state.resize(w, h)
             }
+
+            val previousKeyCallback = this.keyCallback
+            this.keyCallback = { window, key, scancode, action, mods ->
+                if (previousKeyCallback?.invoke(window, key, scancode, action, mods) != true) {
+                    state.pushKeyEvent(
+                        WindowState.KeyEvent(
+                            key,
+                            scancode,
+                            action.api,
+                            mods
+                        ))
+                }
+                false
+            }
         }
 
         fun build(): Result<GlfwWindow> {
@@ -183,8 +199,10 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
 
     }
     
-    enum class KeyAction(val glfw: Int) {
-        PRESS(GLFW_PRESS), RELEASE(GLFW_RELEASE), REPEAT(GLFW_REPEAT);
+    enum class KeyAction(val glfw: Int, val api: ApiKeyAction) {
+        PRESS(GLFW_PRESS, ApiKeyAction.PRESS),
+        RELEASE(GLFW_RELEASE, ApiKeyAction.RELEASE),
+        REPEAT(GLFW_REPEAT, ApiKeyAction.REPEAT);
 
         companion object {
             private val actionMap = values().map { it.glfw to it }.toMap()
@@ -194,13 +212,13 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
     }
 
     data class KeyMods(
-        val shift: Boolean,
-        val control: Boolean,
-        val alt: Boolean,
-        val `super`: Boolean,
-        val capsLock: Boolean,
-        val numLock: Boolean
-    ) {
+        override val shift: Boolean,
+        override val control: Boolean,
+        override val alt: Boolean,
+        override val `super`: Boolean,
+        override val capsLock: Boolean,
+        override val numLock: Boolean
+    ) : ApiKeyMods(shift, control, alt, `super`, capsLock, numLock) {
         constructor(glfw: Int) : this(
             glfw has GLFW_MOD_SHIFT,
             glfw has GLFW_MOD_CONTROL,
@@ -209,10 +227,6 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
             glfw has GLFW_MOD_CAPS_LOCK,
             glfw has GLFW_MOD_NUM_LOCK
         )
-        
-        // Common combination getters
-        val isControlAlt: Boolean = control && alt
-        val isControlAltShift: Boolean = isControlAlt && shift
     }
 
     companion object {

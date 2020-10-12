@@ -1,17 +1,17 @@
 package me.zeroeightsix.kape.api.context
 
+import me.zeroeightsix.kape.api.context.WindowState.KeyEvent
 import me.zeroeightsix.kape.api.math.Vec2d
 import me.zeroeightsix.kape.api.math.Vec2i
 
 class BasicWindowState : WindowState {
     private var _mouse = Vec2d(-1.0, -1.0)
-    private var _charQueue = ArrayDeque<Char>()
     private var _size: Vec2i = Vec2i(0, 0)
 
+    override val charQueue = ArrayDeque<Char>()
+    override val keyQueue = ArrayDeque<KeyEvent>()
     override val mouse
         get() = _mouse
-    override val charQueue
-        get() = _charQueue
     override val size
         get() = _size
 
@@ -25,6 +25,10 @@ class BasicWindowState : WindowState {
         this.charQueue.add(char)
     }
 
+    fun pushKeyEvent(event: KeyEvent) {
+        this.keyQueue.add(event)
+    }
+
     fun pushChars(vararg chars: Char) = chars.forEach(this::pushChar)
 
     fun resize(size: Vec2i) {
@@ -34,7 +38,8 @@ class BasicWindowState : WindowState {
     fun resize(w: Int, h: Int) = resize(Vec2i(w, h))
 
     override fun clear() {
-        this._charQueue.clear()
+        this.charQueue.clear()
+        this.keyQueue.clear()
     }
 }
 
@@ -46,6 +51,8 @@ object UninitialisedWindowState : WindowState {
     override val charQueue: ArrayDeque<Char>
         get() = error()
     override val mouse: Vec2d
+        get() = error()
+    override val keyQueue: ArrayDeque<KeyEvent>
         get() = error()
 
     override fun clear() = Unit
