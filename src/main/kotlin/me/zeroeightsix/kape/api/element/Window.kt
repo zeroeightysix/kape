@@ -3,6 +3,9 @@ package me.zeroeightsix.kape.api.element
 import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.context.Context
 import me.zeroeightsix.kape.api.element.layer.Layer
+import me.zeroeightsix.kape.api.gl.GlPrimitive
+import me.zeroeightsix.kape.api.gl.PrimitiveType
+import me.zeroeightsix.kape.api.gl.Vertex
 import me.zeroeightsix.kape.api.math.times
 import me.zeroeightsix.kape.api.math.unaryMinus
 import kotlin.math.PI
@@ -22,7 +25,8 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
     val pos4 = -pos2
 
     ctx draw {
-        GlPrimitive(PrimitiveType.LINE_LOOP, arrayOf(
+        GlPrimitive(
+            PrimitiveType.LINE_LOOP, arrayOf(
             pos1,
             pos2,
             pos3,
@@ -31,7 +35,8 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
     }
 
     ctx draw {
-        GlPrimitive(PrimitiveType.LINE_LOOP, arrayOf(
+        GlPrimitive(
+            PrimitiveType.LINE_LOOP, arrayOf(
             pos1 * 0.7f,
             pos2 * 0.5f,
             pos3 * 0.3f

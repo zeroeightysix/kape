@@ -2,8 +2,8 @@ package me.zeroeightsix.kape.impl.element.layer
 
 import me.zeroeightsix.kape.api.*
 import me.zeroeightsix.kape.api.context.Context
-import me.zeroeightsix.kape.api.element.PrimitiveType
-import me.zeroeightsix.kape.api.element.Vertex
+import me.zeroeightsix.kape.api.gl.PrimitiveType
+import me.zeroeightsix.kape.api.gl.Vertex
 import me.zeroeightsix.kape.api.element.layer.Layer
 import me.zeroeightsix.kape.api.element.layer.LayerRenderer
 import me.zeroeightsix.kape.api.gl.ShaderProgram

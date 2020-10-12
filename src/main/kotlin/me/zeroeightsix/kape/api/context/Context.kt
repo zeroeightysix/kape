@@ -1,6 +1,6 @@
 package me.zeroeightsix.kape.api.context
 
-import me.zeroeightsix.kape.api.element.GlPrimitive
+import me.zeroeightsix.kape.api.gl.GlPrimitive
 import me.zeroeightsix.kape.api.math.Vec2d
 import me.zeroeightsix.kape.api.math.Vec2i
 

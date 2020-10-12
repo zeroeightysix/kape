@@ -1,4 +1,4 @@
-package me.zeroeightsix.kape.api.element
+package me.zeroeightsix.kape.api.gl
 
 import me.zeroeightsix.kape.api.math.Vec2f
 import org.lwjgl.opengl.GL11.*
