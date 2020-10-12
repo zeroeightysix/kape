@@ -27,16 +27,17 @@ fun main() {
     kape.windowState = windowState
 
     // Main loop
-    with (kape) {
-        while (!glfwWindow.shouldClose) {
-            KapeGL.clear()
-            kape.nextContext()
+    while (!glfwWindow.shouldClose) {
+        // Clear screen
+        KapeGL.clear()
 
+        // Compose the kape frame & render it
+        kape.frame {
             window()
-
-            renderAndRelease()
-            glfwWindow.update()
         }
+
+        // Poll events & state etc
+        glfwWindow.update()
     }
 
     // Exit

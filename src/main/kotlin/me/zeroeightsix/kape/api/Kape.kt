@@ -39,6 +39,12 @@ class Kape<P>(
         this.windowState.clear()
     }
 
+    fun frame(block: Kape<P>.() -> Unit) {
+        nextContext()
+        block()
+        renderAndRelease()
+    }
+
 }
 
 /**

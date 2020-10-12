@@ -31,6 +31,8 @@ class BasicWindowState : WindowState {
         this._size = size
     }
 
+    fun resize(w: Int, h: Int) = resize(Vec2i(w, h))
+
     override fun clear() {
         this._charQueue.clear()
     }
