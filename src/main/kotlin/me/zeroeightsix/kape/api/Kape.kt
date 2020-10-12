@@ -14,7 +14,7 @@ class Kape<P>(
     private val renderer: LayerRenderer<P>,
     private val bindStack: BindStack = BasicBindStack(),
     private val contextSupplier: (Kape<P>) -> P?
-) : ForkOrderedLayer<P>(), BindStack by bindStack {
+) : ForkOrderedLayer<P>(), BindStack by bindStack, Destroy {
 
     private var _context: P? = null
 
@@ -43,6 +43,10 @@ class Kape<P>(
         nextContext()
         block()
         renderAndRelease()
+    }
+
+    override fun destroy() {
+        this.renderer.destroy()
     }
 
 }

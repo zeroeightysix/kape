@@ -1,4 +1,5 @@
 import me.zeroeightsix.kape.api.context.BasicWindowState
+import me.zeroeightsix.kape.api.destroyAll
 import me.zeroeightsix.kape.api.element.window
 import me.zeroeightsix.kape.api.kapeCommon
 import me.zeroeightsix.kape.api.math.Vec2d
@@ -39,8 +40,10 @@ fun main() {
         glfwWindow.update()
     }
 
+    // Clean up resources
+    glfwWindow.freeCallbacks()
+    destroyAll(glfwWindow, kape)
     // Exit
-    glfwWindow.freeAndDestroy()
     println("Exiting")
     GlfwWindow.terminateGlfw()
 

@@ -47,9 +47,13 @@ class GlLayerRenderer(
 
         children[id] = leaf
     }
+
+    override fun destroy() {
+        this.root.destroy()
+    }
 }
 
-private class LayerGlNode {
+private class LayerGlNode : Destroy {
     val primitiveMap = EnumMap<PrimitiveType, PrimitiveRenderBatch>(PrimitiveType::class.java)
 
     val children = HashMap<ID, LayerGlNode>()
@@ -154,6 +158,10 @@ private class LayerGlNode {
                 GL11.glDrawArrays(type.gl, 0, node.size)
             }
         }
+    }
+
+    override fun destroy() {
+        this.primitiveMap.values.forEach(Destroy::destroy)
     }
 
     private class PrimitiveRenderBatch(val type: PrimitiveType, val nodes: Array<PrimitiveRenderedNode>) : Destroy {
