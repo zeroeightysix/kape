@@ -25,7 +25,7 @@ interface Layer<P> {
 /**
  * A [Layer] with children ordered in the order they were forked in.
  */
-open class ForkOrderedLayer<P>(override val parent: Layer<P>? = null, override val context: P) : Layer<P> {
+abstract class ForkOrderedLayer<P>(override val parent: Layer<P>? = null) : Layer<P> {
 
     override val children: LayerMap<P> = LayerMap()
 

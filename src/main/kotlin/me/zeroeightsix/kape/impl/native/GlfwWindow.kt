@@ -6,6 +6,7 @@ import me.zeroeightsix.kape.api.math.has
 import me.zeroeightsix.kape.api.native.NativeWindow
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFWCursorPosCallback
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL11
@@ -15,8 +16,8 @@ import org.lwjgl.system.MemoryUtil.NULL
  * A generic key callback. Returns true if the action was handled, and thus any other key callbacks should not take action.
  */
 typealias KeyCallback = (window: Long, key: Int, scancode: Int, action: GlfwWindow.KeyAction, mods: GlfwWindow.KeyMods) -> Boolean
-
 typealias ResizeCallback = (window: Long, width: Int, height: Int) -> Unit
+typealias CursorPositionCallback = (window: Long, x: Double, y: Double) -> Unit
 
 private fun KeyCallback.asGlfwKeyCallback() = object : GLFWKeyCallback() {
     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
@@ -26,6 +27,10 @@ private fun KeyCallback.asGlfwKeyCallback() = object : GLFWKeyCallback() {
 
 private fun ResizeCallback.asGlfwResizeCallback() = object : GLFWFramebufferSizeCallback() {
     override fun invoke(window: Long, width: Int, height: Int) = this@asGlfwResizeCallback(window, width, height)
+}
+
+private fun CursorPositionCallback.asGlfwMouseCallback() = object : GLFWCursorPosCallback() {
+    override fun invoke(window: Long, xpos: Double, ypos: Double) = this@asGlfwMouseCallback(window, xpos, ypos)
 }
 
 private fun Boolean.asGlfwBool() = if (this) GLFW_TRUE else GLFW_FALSE
@@ -60,6 +65,14 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
     fun freeAndDestroy() {
         freeCallbacks()
         destroy()
+    }
+
+    fun setResizeCallback(callback: ResizeCallback) {
+        glfwSetFramebufferSizeCallback(handle, callback.asGlfwResizeCallback())
+    }
+
+    fun setCursorsPosCallback(callback: CursorPositionCallback) {
+        glfwSetCursorPosCallback(handle, callback.asGlfwMouseCallback())
     }
 
     private val keyCallback: KeyCallback = { window, key, scancode, action, mods ->
@@ -114,6 +127,8 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
             GL11.glViewport(0, 0, w, h)
         }
 
+        var cursorPosCallback: CursorPositionCallback? = null
+
         fun defaults(): Builder {
             resizable = true
             return this
@@ -139,9 +154,8 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
             val window = GlfwWindow(handle)
 
             glfwSetKeyCallback(handle, window.wrapKeyCallback(this.keyCallback).asGlfwKeyCallback())
-            this.resizeCallback?.let { callback ->
-                glfwSetFramebufferSizeCallback(handle, callback.asGlfwResizeCallback())
-            }
+            this.resizeCallback?.run { window.setResizeCallback(this) }
+            this.cursorPosCallback?.run { window.setCursorsPosCallback(this) }
 
             if (show)
                 glfwShowWindow(handle)

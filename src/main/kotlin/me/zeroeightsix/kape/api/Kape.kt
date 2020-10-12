@@ -1,6 +1,8 @@
 package me.zeroeightsix.kape.api
 
 import me.zeroeightsix.kape.api.context.Context
+import me.zeroeightsix.kape.api.context.UninitialisedWindowState
+import me.zeroeightsix.kape.api.context.WindowState
 import me.zeroeightsix.kape.api.element.layer.ForkOrderedLayer
 import me.zeroeightsix.kape.api.element.layer.LayerRenderer
 import me.zeroeightsix.kape.impl.element.layer.GlLayerRenderer
@@ -8,25 +10,33 @@ import me.zeroeightsix.kape.impl.element.layer.GlLayerRenderer
 typealias ID = Any
 
 class Kape<P>(
-    private val rendererSupplier: (Kape<P>) -> LayerRenderer<P>,
-    val bindStack: BindStack = BasicBindStack(),
-    val contextSupplier: () -> P
-) : ForkOrderedLayer<P>(context = contextSupplier()), BindStack by bindStack {
+    var windowState: WindowState = UninitialisedWindowState,
+    private val renderer: LayerRenderer<P>,
+    private val bindStack: BindStack = BasicBindStack(),
+    private val contextSupplier: (Kape<P>) -> P?
+) : ForkOrderedLayer<P>(), BindStack by bindStack {
 
-    private var _context: P = super.context
-    private val renderer = rendererSupplier(this)
+    private var _context: P? = null
 
     override val context: P
-        get() = this._context
+        get() = this._context ?: error("Tried to access context before render initialisation")
+
+    /**
+     * Generates the next context. Returns `false` if this failed, and `true` if it succeeded.
+     */
+    fun nextContext(): Boolean {
+        this._context = contextSupplier(this)
+        return this._context != null
+    }
 
     fun render() {
-        renderer.render(this)
+        renderer.render(this, bindStack = this)
     }
 
     fun renderAndRelease() {
         render()
         this.children.clear()
-        this._context = contextSupplier()
+        this.windowState.clear()
     }
 
 }
@@ -37,4 +47,4 @@ class Kape<P>(
  * Use this instance if you wish to co-operate with other projects that might be using Kape in the same environment,
  * unless the environment provides an instance of Kape.
  */
-val kapeCommon = Kape({ GlLayerRenderer(bindStack = it) }) { Context() }
+val kapeCommon = Kape(renderer = GlLayerRenderer()) { Context(it.windowState) }

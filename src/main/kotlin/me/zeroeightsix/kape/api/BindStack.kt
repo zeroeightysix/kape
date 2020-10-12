@@ -25,3 +25,10 @@ class BasicBindStack : BindStack {
             this.resetBind()
     }
 }
+
+object NoBindStack: BindStack {
+    override fun Bind.bindScoped(block: () -> Unit) {
+        bind()
+        block()
+    }
+}

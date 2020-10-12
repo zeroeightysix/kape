@@ -17,20 +17,19 @@ import java.util.*
 import kotlin.collections.HashMap
 
 class GlLayerRenderer(
-    private val program: ShaderProgram = standardProgram,
-    private val bindStack: BindStack
+    private val program: ShaderProgram = standardProgram
 ) : LayerRenderer<Context> {
     private val root = LayerGlNode()
 
-    override fun render(layer: Layer<Context>, id: ID) {
+    override fun render(layer: Layer<Context>, id: ID, bindStack: BindStack) {
         with(bindStack) {
             program.bindScoped {
-                root.render(id, layer)
+                root.render(id, layer, bindStack)
             }
         }
     }
 
-    private fun LayerGlNode.render(id: ID, layer: Layer<Context>) {
+    private fun LayerGlNode.render(id: ID, layer: Layer<Context>, bindStack: BindStack = NoBindStack) {
         var dirty = layer.context.dirty
         val leaf = children.computeIfAbsent(id) {
             dirty = true
