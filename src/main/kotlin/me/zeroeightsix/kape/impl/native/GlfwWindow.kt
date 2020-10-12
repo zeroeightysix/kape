@@ -1,6 +1,8 @@
 package me.zeroeightsix.kape.impl.native
 
 import me.zeroeightsix.kape.api.Destroy
+import me.zeroeightsix.kape.api.context.BasicWindowState
+import me.zeroeightsix.kape.api.context.WindowState
 import me.zeroeightsix.kape.api.math.Vec2i
 import me.zeroeightsix.kape.api.math.has
 import me.zeroeightsix.kape.api.native.NativeWindow
@@ -136,6 +138,20 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
 
         fun windowHint(hint: Int, value: Int) {
             hints[hint] = value
+        }
+
+        fun tieToState(state: BasicWindowState) {
+            val previousPosCallback = this.cursorPosCallback
+            this.cursorPosCallback = { window, x, y ->
+                previousPosCallback?.invoke(window, x, y)
+                state.setMouse(x, y)
+            }
+
+            val previousResizeCallback = this.resizeCallback ?: standardResizeCallback
+            this.resizeCallback = { window, w, h ->
+                previousResizeCallback(window, w, h)
+                state.resize(w, h)
+            }
         }
 
         fun build(): Result<GlfwWindow> {

@@ -12,13 +12,7 @@ fun main() {
     // Create GLFW window
     val glfwWindow = GlfwWindow.createWindow {
         resizable = true
-        resizeCallback = { window, w, h ->
-            standardResizeCallback(window, w, h)
-            windowState.resize(w, h)
-        }
-        cursorPosCallback = { _, x, y ->
-            windowState.setMouse(x, y)
-        }
+        tieToState(windowState) // Generate callbacks for our window state
     }.getOrThrow()
 
     // Set up GL
@@ -27,6 +21,8 @@ fun main() {
 
     // Init kape (required to be after context init)
     val kape = kapeCommon
+    // Set the kape window state that will be used. Mind that if others are using kapeCommon, that you will be
+    // overwriting their window state (or they will be overriding yours)
     kape.windowState = windowState
 
     // Main loop
