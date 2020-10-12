@@ -12,7 +12,10 @@ fun main() {
     // Create GLFW window
     val glfwWindow = GlfwWindow.createWindow {
         resizable = true
-        resizeCallback = standardResizeCallback
+        resizeCallback = { window, w, h ->
+            standardResizeCallback(window, w, h)
+            windowState.resize(w, h)
+        }
         cursorPosCallback = { _, x, y ->
             windowState.setMouse(x, y)
         }
