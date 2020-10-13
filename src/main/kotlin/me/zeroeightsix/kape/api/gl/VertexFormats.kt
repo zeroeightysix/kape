@@ -1,6 +1,5 @@
 package me.zeroeightsix.kape.api.gl
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import me.zeroeightsix.kape.api.*
 import me.zeroeightsix.kape.api.context.Context
 import org.lwjgl.opengl.GL11
@@ -17,7 +16,6 @@ typealias PrimColour = Pair<Vertex, Colour>
 private fun FloatArray.shoveVertex(at: Int, vertex: Vertex) {
     this[at] = vertex.x
     this[at + 1] = vertex.y
-    this[at + 2] = 0f
 }
 
 private fun FloatArray.shoveColour(at: Int, colour: Colour) {
@@ -33,7 +31,7 @@ private fun FloatArray.shoveColour(at: Int, colour: Colour) {
 }
 
 object VertexColour : VertexFormat {
-    private const val vertexCount = 3
+    private const val vertexCount = 2
     private const val colourCount = 4
     override val floatsPerEntry = vertexCount + colourCount
 
