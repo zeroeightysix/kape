@@ -7,9 +7,13 @@ const val STD_VERTEX_SOURCE =
 """
 #version 330 core
 layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec4 vertexColour;
+
+out vec4 fragmentColour;
 
 void main()
 {
+    fragmentColour = vertexColour;
     gl_Position = vec4(aPos, 0.0, 1.0);
 }
 """
@@ -17,11 +21,13 @@ void main()
 const val STD_FRAGMENT_SOURCE =
 """
 #version 330 core
-out vec4 FragColor;
+
+in vec4 fragmentColour;
+out vec4 finalFragColour;
 
 void main()
 {
-    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    finalFragColour = fragmentColour;
 }
 """
 
