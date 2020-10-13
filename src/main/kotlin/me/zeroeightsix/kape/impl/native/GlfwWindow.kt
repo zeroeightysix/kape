@@ -27,7 +27,13 @@ typealias CharCallback = (window: Long, char: Char) -> Unit
 
 private fun KeyCallback.asGlfwKeyCallback() = object : GLFWKeyCallback() {
     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        this@asGlfwKeyCallback(window, key, scancode, action.glfwAction ?: error("Invalid GLFW key action"), mods.glfwMods)
+        this@asGlfwKeyCallback(
+            window,
+            key,
+            scancode,
+            action.glfwAction ?: error("Invalid GLFW key action"),
+            mods.glfwMods
+        )
     }
 }
 
@@ -51,6 +57,7 @@ private val Int.glfwAction
 private val Int.glfwMods
     get() = GlfwWindow.KeyMods(this)
 
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 open class GlfwWindow private constructor(protected val handle: Long) : NativeWindow, Destroy {
 
     fun freeCallbacks() = glfwFreeCallbacks(this.handle)
@@ -77,6 +84,10 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
         destroy()
     }
 
+    fun setKeyCallback(callback: KeyCallback) {
+        glfwSetKeyCallback(handle, callback.asGlfwKeyCallback())
+    }
+
     fun setResizeCallback(callback: ResizeCallback) {
         glfwSetFramebufferSizeCallback(handle, callback.asGlfwResizeCallback())
     }
@@ -89,17 +100,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
         glfwSetCharCallback(handle, callback.asGlfwCharCallback())
     }
 
-    private val keyCallback: KeyCallback = { window, key, scancode, action, mods ->
-        println("$window: $key#$scancode ($action) mods $mods")
-        false
-    }
-
-    private fun wrapKeyCallback(priorityCallback: KeyCallback? = null): KeyCallback = priorityCallback?.let {
-        { window, key, scancode, action, mods ->
-            if (priorityCallback(window, key, scancode, action, mods)) true else this.keyCallback(window, key, scancode, action, mods)
-        }
-    } ?: this.keyCallback
-
+    @Suppress("MemberVisibilityCanBePrivate")
     class Builder internal constructor() {
         private var hints = mutableMapOf<Int, Int>()
 
@@ -131,18 +132,12 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
          */
         var show: Boolean = true
 
-        /**
-         * An *additional* key callback. The standard Kape key callback is always added, with a lower priority than this one, if not null.
-         */
         var keyCallback: KeyCallback? = null
-
         var resizeCallback: ResizeCallback? = null
         val standardResizeCallback: ResizeCallback = { _, w, h ->
             GL11.glViewport(0, 0, w, h)
         }
-
         var cursorPosCallback: CursorPositionCallback? = null
-
         var charCallback: CharCallback? = null
 
         fun defaults(): Builder {
@@ -176,7 +171,8 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
                             scancode,
                             action.api,
                             mods
-                        ))
+                        )
+                    )
                 }
                 false
             }
@@ -203,7 +199,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
 
             val window = GlfwWindow(handle)
 
-            glfwSetKeyCallback(handle, window.wrapKeyCallback(this.keyCallback).asGlfwKeyCallback())
+            this.keyCallback?.run { window.setKeyCallback(this) }
             this.resizeCallback?.run { window.setResizeCallback(this) }
             this.cursorPosCallback?.run { window.setCursorsPosCallback(this) }
             this.charCallback?.run { window.setCharCallback(this) }
@@ -217,7 +213,8 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
         private fun Long?.asGlfwNullable() = this ?: NULL
 
     }
-    
+
+    @Suppress("unused")
     enum class KeyAction(val glfw: Int, val api: ApiKeyAction) {
         PRESS(GLFW_PRESS, ApiKeyAction.PRESS),
         RELEASE(GLFW_RELEASE, ApiKeyAction.RELEASE),
@@ -225,7 +222,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
 
         companion object {
             private val actionMap = values().map { it.glfw to it }.toMap()
-            
+
             fun fromInt(int: Int): KeyAction? = actionMap[int]
         }
     }
@@ -248,9 +245,9 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
         )
     }
 
+    @Suppress("unused")
     companion object {
-        fun fromHandle(handle: Long, installCallbacks: Boolean = true) =
-            GlfwWindow(handle).also { if (installCallbacks) glfwSetKeyCallback(it.handle, it.keyCallback.asGlfwKeyCallback()) }
+        fun fromHandle(handle: Long) = GlfwWindow(handle)
 
         fun createWindow(options: Builder.() -> Unit = {}) = Builder().defaults().also(options).build()
 
