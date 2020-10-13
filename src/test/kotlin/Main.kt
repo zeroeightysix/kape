@@ -1,10 +1,9 @@
-import me.zeroeightsix.kape.api.context.BasicWindowState
 import me.zeroeightsix.kape.api.destroyAll
-import me.zeroeightsix.kape.api.element.window
-import me.zeroeightsix.kape.api.kapeCommon
-import me.zeroeightsix.kape.api.math.Vec2d
-import me.zeroeightsix.kape.impl.gl.KapeGL
-import me.zeroeightsix.kape.impl.native.GlfwWindow
+import me.zeroeightsix.kape.api.state.BasicWindowState
+import me.zeroeightsix.kape.impl.kapeCommon
+import me.zeroeightsix.kape.impl.render.KapeGL
+import me.zeroeightsix.kape.impl.util.window.GlfwWindow
+import me.zeroeightsix.kape.impl.window
 
 fun main() {
 
