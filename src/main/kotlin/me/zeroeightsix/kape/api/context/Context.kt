@@ -1,8 +1,14 @@
 package me.zeroeightsix.kape.api.context
 
-import me.zeroeightsix.kape.api.gl.GlPrimitive
+import me.zeroeightsix.kape.api.gl.PrimitiveType
+import me.zeroeightsix.kape.api.gl.VertexFormat
 import me.zeroeightsix.kape.api.math.Vec2d
 import me.zeroeightsix.kape.api.math.Vec2i
+
+private fun <T, R> Iterator<T>.map(mapper: (T) -> R) = object : Iterator<R> {
+    override fun hasNext(): Boolean = this@map.hasNext()
+    override fun next(): R = mapper(this@map.next())
+}
 
 class Context(val windowState: WindowState) : Reproducible<Context> {
     /**
@@ -14,15 +20,17 @@ class Context(val windowState: WindowState) : Reproducible<Context> {
         dirty = true
     }
 
-    private val queue = ArrayDeque<() -> GlPrimitive>()
+    private val queue = ArrayDeque<() -> Triple<VertexFormat, PrimitiveType, FloatArray>>()
 
-    fun drawAll(): List<GlPrimitive> = queue.map { it() }
+    fun push(supplier: () -> Triple<VertexFormat, PrimitiveType, FloatArray>) {
+        queue.add(supplier)
+    }
 
-    infix fun draw(supplier: () -> GlPrimitive) = queue.add(supplier).let { Unit }
-
-    operator fun plusAssign(supplier: () -> GlPrimitive) = this.draw(supplier)
+    fun drawAll(): Iterator<Triple<VertexFormat, PrimitiveType, FloatArray>> = queue.iterator().map { it() }
 
     override fun createNext() = Context(this.windowState)
+
+    operator fun invoke(block: Context.() -> Unit) = block()
 }
 
 interface WindowState {
@@ -40,7 +48,7 @@ enum class KeyAction {
     PRESS, RELEASE, REPEAT
 }
 
-@Suppress("LeakingThis")
+@Suppress("LeakingThis", "CanBeParameter")
 open class KeyMods(
     open val shift: Boolean,
     open val control: Boolean,

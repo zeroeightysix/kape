@@ -22,9 +22,3 @@ enum class PrimitiveType(val gl: Int, val batch: Boolean = false) {
     TRIANGLE_STRIP(GL_TRIANGLE_STRIP),
     TRIANGLE_FAN(GL_TRIANGLE_FAN);
 }
-
-open class GlPrimitive(val type: PrimitiveType, override val vertices: Array<Vertex>) : Primitive {
-    override val primitiveType: Int = this.type.gl
-}
-
-infix fun Vertex.lineTo(to: Vertex) = GlPrimitive(PrimitiveType.LINES, arrayOf(this, to))

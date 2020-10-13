@@ -1,12 +1,13 @@
 package me.zeroeightsix.kape.api.element
 
-import me.zeroeightsix.kape.api.ID
+import me.zeroeightsix.kape.api.*
 import me.zeroeightsix.kape.api.context.Context
 import me.zeroeightsix.kape.api.element.layer.Layer
-import me.zeroeightsix.kape.api.gl.GlPrimitive
-import me.zeroeightsix.kape.api.gl.PrimitiveType
+import me.zeroeightsix.kape.api.gl.PrimitiveType.LINES
+import me.zeroeightsix.kape.api.gl.PrimitiveType.LINE_LOOP
 import me.zeroeightsix.kape.api.gl.Vertex
-import me.zeroeightsix.kape.api.math.times
+import me.zeroeightsix.kape.api.gl.VertexColour
+import me.zeroeightsix.kape.api.gl.invoke
 import me.zeroeightsix.kape.api.math.unaryMinus
 import kotlin.math.PI
 import kotlin.math.cos
@@ -24,22 +25,15 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
     val pos3 = -pos1
     val pos4 = -pos2
 
-    ctx draw {
-        GlPrimitive(
-            PrimitiveType.LINE_LOOP, arrayOf(
-            pos1,
-            pos2,
-            pos3,
-            pos4
-        ))
-    }
-
-    ctx draw {
-        GlPrimitive(
-            PrimitiveType.LINE_LOOP, arrayOf(
-            pos1 * 0.7f,
-            pos2 * 0.5f,
-            pos3 * 0.3f
-        ))
+    ctx {
+        VertexColour {
+            push(
+                LINE_LOOP,
+                pos1 % white,
+                pos2 % red,
+                pos3 % green,
+                pos4 % blue
+            )
+        }
     }
 }
