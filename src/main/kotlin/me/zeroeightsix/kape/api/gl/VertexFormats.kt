@@ -18,6 +18,7 @@ private fun FloatArray.shoveVertex(at: Int, vertex: Vertex) {
     this[at + 1] = vertex.y
 }
 
+@Suppress("EXPERIMENTAL_API_USAGE")
 private fun FloatArray.shoveColour(at: Int, colour: Colour) {
     val r = colour.r.toFloat() / 255f
     val g = colour.g.toFloat() / 255f
