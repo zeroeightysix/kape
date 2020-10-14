@@ -72,7 +72,7 @@ private class LayerGlNode : Destroy {
      * Clear data, redraw from context
      */
     fun commit(context: Context, bindStack: BindStack) {
-        val batchedFloats = HashMap<FormatPrim, MutableList<MutableList<Float>>>()
+        val batchedFloats = HashMap<FormatPrim, MutableList<Pair<MutableList<Float>, IntArray?>>>()
 
         context.drawAll().forEach { (formatPrim, vertices, indices) ->
             val (_, primitiveType) = formatPrim
@@ -80,9 +80,9 @@ private class LayerGlNode : Destroy {
             // Determine what list to append to. If batchable, the first one (or the one we create if none),
             // and if not batchable always a new list.
             val appendTo = if (primitiveType.batch && lists.isNotEmpty())
-                lists.first()
+                lists.first().first
             else
-                mutableListOf<Float>().also { lists.add(it) }
+                mutableListOf<Float>().also { lists.add(it to indices) }
             appendTo.addAll(vertices.asIterable())
         }
 
@@ -111,7 +111,7 @@ private class LayerGlNode : Destroy {
                 PrimitiveRenderBatch(Array(batches.size) { PrimitiveRenderedNode() })
             }
 
-            batches.forEachIndexed { idx, floatList ->
+            batches.forEachIndexed { idx, (floatList, indices) ->
                 val floatArray = floatList.toFloatArray()
                 val node = batch.nodes[idx]
 
@@ -124,6 +124,25 @@ private class LayerGlNode : Destroy {
                             // We don't know what kind of data (just vertices? vertices and colours? nothing?)
                             // was just uploaded to the buffer, but the VertexFormat does!
                             format.setVertexAttributePointers()
+                        }
+                    }
+
+                    // No indices but an EBO exists, destroy the EBO
+                    if (indices == null && node.ebo != null) {
+                        println("EBO destroyed")
+                        node.ebo!!.destroy()
+                        node.ebo = null
+                    }
+
+                    if (indices != null) {
+                        // If we need an EBO but there is none, create one
+                        if (node.ebo == null)
+                            node.ebo = EBO().also { println("EBO made") }
+
+                        node.eboSize = indices.size
+                        // We're sure there is an EBO now, so we can bind it (and null-assert)
+                        node.ebo!!.bindScoped {
+                            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW)
                         }
                     }
                 }
@@ -145,7 +164,13 @@ private class LayerGlNode : Destroy {
             val (_, type) = formatPrim
             batch.nodes.forEach { node ->
                 node.vao.bind()
-                GL11.glDrawArrays(type.gl, 0, node.size)
+                val ebo = node.ebo
+                if (ebo != null) {
+                    ebo.bind()
+                    GL11.glDrawElements(type.gl, node.eboSize, GL11.GL_UNSIGNED_INT, 0)
+                } else {
+                    GL11.glDrawArrays(type.gl, 0, node.size)
+                }
             }
         }
     }
@@ -158,7 +183,7 @@ private class LayerGlNode : Destroy {
         override fun destroy() = nodes.forEach(Destroy::destroy)
     }
 
-    private class PrimitiveRenderedNode(val ebo: EBO? = null) : Destroy {
+    private class PrimitiveRenderedNode(var ebo: EBO? = null, var eboSize: Int = 0) : Destroy {
         val vao = VAO()
         val vbo = VBO()
 

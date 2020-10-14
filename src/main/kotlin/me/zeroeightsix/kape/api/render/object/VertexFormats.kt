@@ -40,7 +40,13 @@ object VertexColour : VertexFormat {
     private const val colourStride = Float.SIZE_BYTES * colourCount
     private const val stride: Int = vertexStride + colourStride
 
-    fun Context.push(type: PrimitiveType, vararg vAttributes: PrimColour) {
+    fun Context.push(type: PrimitiveType, vararg vAttributes: PrimColour) = this.push(type, vAttributes, null)
+
+    fun Context.push(
+        type: PrimitiveType,
+        vAttributes: Array<out PrimColour>,
+        indices: IntArray? = null
+    ) {
         push {
             val floats = FloatArray(floatsPerEntry * vAttributes.size)
             vAttributes.forEachIndexed { primColIdx, (vex, col) ->
@@ -48,7 +54,7 @@ object VertexColour : VertexFormat {
                 floats.shoveVertex(zeroIdx, vex)
                 floats.shoveColour(zeroIdx + vertexCount, col)
             }
-            Triple(this@VertexColour to type, floats, null)
+            Triple(this@VertexColour to type, floats, indices)
         }
     }
 
