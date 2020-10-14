@@ -11,7 +11,7 @@ private fun <T, R> Iterator<T>.map(mapper: (T) -> R) = object : Iterator<R> {
 typealias FormatPrim = Pair<VertexFormat, PrimitiveType>
 typealias RenderEntry = Triple<FormatPrim, FloatArray, IntArray?>
 
-class Context(val windowState: WindowState) : Reproducible<Context> {
+class Context(val windowState: WindowState) : Reproducible<Context, Unit> {
     /**
      * Whether or not the context was modified compared to the previous iteration of contexts
      */
@@ -29,7 +29,7 @@ class Context(val windowState: WindowState) : Reproducible<Context> {
 
     fun drawAll(): Iterator<RenderEntry> = queue.iterator().map { it() }
 
-    override fun createNext() = Context(this.windowState)
+    override fun createNext(requirements: Unit) = Context(this.windowState)
 
     operator fun invoke(block: Context.() -> Unit) = block()
 }
