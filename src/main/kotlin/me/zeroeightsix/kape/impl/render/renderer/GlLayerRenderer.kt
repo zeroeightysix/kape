@@ -129,7 +129,6 @@ private class LayerGlNode : Destroy {
 
                     // No indices but an EBO exists, destroy the EBO
                     if (indices == null && node.ebo != null) {
-                        println("EBO destroyed")
                         node.ebo!!.destroy()
                         node.ebo = null
                     }
@@ -137,7 +136,7 @@ private class LayerGlNode : Destroy {
                     if (indices != null) {
                         // If we need an EBO but there is none, create one
                         if (node.ebo == null)
-                            node.ebo = EBO().also { println("EBO made") }
+                            node.ebo = EBO()
 
                         node.eboSize = indices.size
                         // We're sure there is an EBO now, so we can bind it (and null-assert)
