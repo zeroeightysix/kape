@@ -11,16 +11,20 @@ import me.zeroeightsix.kape.api.render.renderer.LayerRenderer
 import me.zeroeightsix.kape.api.state.Context
 import me.zeroeightsix.kape.api.state.layer.Layer
 import me.zeroeightsix.kape.api.util.Destroy
+import me.zeroeightsix.kape.api.util.math.Vec2i
 import me.zeroeightsix.kape.impl.render.`object`.VAO
 import me.zeroeightsix.kape.impl.render.`object`.VBO
 import me.zeroeightsix.kape.impl.render.`object`.standardProgram
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL15
+import org.lwjgl.opengl.GL20
 
 class GlLayerRenderer(
     private val program: ShaderProgram = standardProgram
 ) : LayerRenderer<Context> {
     private val root = LayerGlNode()
+    private val viewportUniform = this.program.getUniformLocation("viewport")
+    private var cachedWindowSize: Vec2i? = null
 
     override fun render(layer: Layer<Context>, id: ID, bindStack: BindStack) {
         with(bindStack) {
@@ -31,6 +35,12 @@ class GlLayerRenderer(
     }
 
     private fun LayerGlNode.render(id: ID, layer: Layer<Context>, bindStack: BindStack = NoBindStack) {
+        val windowSize = layer.context.windowState.size
+        if (cachedWindowSize != windowSize) {
+            GL20.glUniform2f(this@GlLayerRenderer.viewportUniform, windowSize.x.toFloat(), windowSize.y.toFloat())
+            cachedWindowSize = windowSize
+        }
+
         var dirty = layer.context.dirty
         val leaf = children.computeIfAbsent(id) {
             dirty = true

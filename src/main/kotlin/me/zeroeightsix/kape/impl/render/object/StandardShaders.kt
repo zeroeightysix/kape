@@ -6,15 +6,19 @@ import me.zeroeightsix.kape.api.render.`object`.ShaderType.VERTEX_SHADER
 const val STD_VERTEX_SOURCE =
 """
 #version 330 core
-layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec4 vertexColour;
+layout (location = 0) in vec2 position;
+layout (location = 1) in vec4 colour;
+
+uniform vec2 viewport;
 
 out vec4 fragmentColour;
 
 void main()
 {
-    fragmentColour = vertexColour;
-    gl_Position = vec4(aPos, 0.0, 1.0);
+    fragmentColour = colour;
+    vec4 screenPosition = vec4(2 * position / viewport - 1, 0, 1);
+    vec4 yInverted = vec4(screenPosition.x, -screenPosition.y, screenPosition.zw);
+    gl_Position = yInverted;
 }
 """
 

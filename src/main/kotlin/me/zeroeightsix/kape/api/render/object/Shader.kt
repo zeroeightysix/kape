@@ -4,6 +4,8 @@ import me.zeroeightsix.kape.api.render.bind.Bind
 import me.zeroeightsix.kape.api.util.Destroy
 import org.lwjgl.opengl.GL32
 
+typealias UniformLocation = Int
+
 interface Shader : Destroy {
     val pointer: Int
 }
@@ -14,4 +16,6 @@ enum class ShaderType(val glType: Int) {
     FRAGMENT_SHADER(GL32.GL_FRAGMENT_SHADER)
 }
 
-interface ShaderProgram : Destroy, Bind
+interface ShaderProgram : Destroy, Bind {
+    fun getUniformLocation(name: String): UniformLocation
+}

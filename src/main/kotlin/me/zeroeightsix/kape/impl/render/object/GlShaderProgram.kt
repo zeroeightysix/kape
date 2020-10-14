@@ -43,6 +43,7 @@ class GlShaderProgram : ShaderProgram {
 
     override fun bind() = useProgram(this.pointer)
     override fun resetBind() = useProgram(0)
+    override fun getUniformLocation(name: String) = glGetUniformLocation(this.pointer, name)
 
     override fun destroy() {
         glDeleteProgram(this.pointer)
