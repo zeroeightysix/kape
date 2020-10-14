@@ -7,6 +7,7 @@ package me.zeroeightsix.kape.api.util
  */
 typealias Colour = UInt
 
+const val black: Colour = 0x000000FFu
 const val white: Colour = 0xFFFFFFFFu
 const val red: Colour = 0xFF0000FFu
 const val green: Colour = 0x00FF00FFu
