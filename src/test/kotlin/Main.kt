@@ -1,7 +1,9 @@
+import me.zeroeightsix.kape.api.Kape
 import me.zeroeightsix.kape.api.destroyAll
 import me.zeroeightsix.kape.api.state.BasicWindowState
-import me.zeroeightsix.kape.impl.kapeCommon
+import me.zeroeightsix.kape.api.state.Context
 import me.zeroeightsix.kape.impl.render.KapeGL
+import me.zeroeightsix.kape.impl.render.renderer.GlLayerRenderer
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow
 import me.zeroeightsix.kape.impl.widget.window
 
@@ -20,7 +22,7 @@ fun main() {
     KapeGL.setUp()
 
     // Init kape (required to be after context init)
-    val kape = kapeCommon
+    val kape = Kape(windowState, GlLayerRenderer(), Context(windowState))
     // Set the kape window state that will be used. Mind that if others are using kapeCommon, that you will be
     // overwriting their window state (or they will be overriding yours)
     kape.windowState = windowState

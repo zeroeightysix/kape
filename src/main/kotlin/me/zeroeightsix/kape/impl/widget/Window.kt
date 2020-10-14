@@ -12,11 +12,12 @@ import me.zeroeightsix.kape.api.util.green
 import me.zeroeightsix.kape.api.util.math.*
 import me.zeroeightsix.kape.api.util.red
 
+@OptIn(ExperimentalUnsignedTypes::class)
 fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
     val ctx = this.context
 
     if (ctx.windowState.mouseDelta != Vec2d(0.0))
-        ctx.dirty()
+        ctx.setDirty()
 
     val cursor = ctx.windowState.mouse.toVec2f() + Vec2f(1f)
 

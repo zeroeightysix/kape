@@ -3,6 +3,7 @@ package me.zeroeightsix.kape.api
 import me.zeroeightsix.kape.api.render.bind.BasicBindStack
 import me.zeroeightsix.kape.api.render.bind.BindStack
 import me.zeroeightsix.kape.api.render.renderer.LayerRenderer
+import me.zeroeightsix.kape.api.state.Clone
 import me.zeroeightsix.kape.api.state.UninitialisedWindowState
 import me.zeroeightsix.kape.api.state.WindowState
 import me.zeroeightsix.kape.api.state.layer.ForkOrderedLayer
@@ -11,24 +12,18 @@ import me.zeroeightsix.kape.api.util.Destroy
 typealias ID = Any
 
 @Suppress("MemberVisibilityCanBePrivate")
-class Kape<P>(
+class Kape<P : Clone<P>>(
     var windowState: WindowState = UninitialisedWindowState,
     private val renderer: LayerRenderer<P>,
-    private val bindStack: BindStack = BasicBindStack(),
-    private val contextSupplier: (Kape<P>) -> P?
+    private var _context: P,
+    private val bindStack: BindStack = BasicBindStack()
 ) : ForkOrderedLayer<P>(), BindStack by bindStack, Destroy {
 
-    private var _context: P? = null
-
     override val context: P
-        get() = this._context ?: error("Tried to access context before render initialisation")
+        get() = _context
 
-    /**
-     * Generates the next context. Returns `false` if this failed, and `true` if it succeeded.
-     */
-    fun nextContext(): Boolean {
-        this._context = contextSupplier(this)
-        return this._context != null
+    fun nextContext() {
+        this._context = this.context.clone()
     }
 
     fun render() {
@@ -42,9 +37,7 @@ class Kape<P>(
     }
 
     fun frame(block: Kape<P>.() -> Unit) {
-        if (!nextContext()) {
-            error("Couldn't create new context")
-        }
+        nextContext()
         block()
         renderAndRelease()
     }

@@ -1,5 +1,6 @@
 package me.zeroeightsix.kape.api.state
 
+import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.render.`object`.PrimitiveType
 import me.zeroeightsix.kape.api.render.`object`.VertexFormat
 
@@ -11,17 +12,28 @@ private fun <T, R> Iterator<T>.map(mapper: (T) -> R) = object : Iterator<R> {
 typealias FormatPrim = Pair<VertexFormat, PrimitiveType>
 typealias RenderEntry = Triple<FormatPrim, FloatArray, IntArray?>
 
-class Context(val windowState: WindowState) : Reproducible<Context, Unit> {
+class Context private constructor(val windowState: WindowState, private val node: StateNode<HashMap<ID, Any>>) :
+    Reproducible<Context, ID>, Clone<Context> {
+    constructor(windowState: WindowState) : this(windowState, StateNode(hashMapOf(), hashMapOf()))
+
     /**
      * Whether or not the context was modified compared to the previous iteration of contexts
      */
     var dirty = false
 
-    fun dirty() {
-        dirty = true
-    }
-
     private val queue = ArrayDeque<() -> RenderEntry>()
+
+    @JvmName("getStateAny")
+    fun getState(id: ID) = this.node.value?.get(id)
+
+    fun <T : Any> setState(id: ID, value: T) = this.node.value?.set(id, value) != null
+
+    inline fun <reified T> getState(id: ID) = this.getState(id) as? T
+
+    override fun createNext(requirements: ID) = Context(
+        this.windowState,
+        this.node.children.getOrPut(requirements) { StateNode(hashMapOf(), hashMapOf()) }
+    )
 
     fun push(supplier: () -> RenderEntry) {
         queue.add(supplier)
@@ -29,7 +41,13 @@ class Context(val windowState: WindowState) : Reproducible<Context, Unit> {
 
     fun drawAll(): Iterator<RenderEntry> = queue.iterator().map { it() }
 
-    override fun createNext(requirements: Unit) = Context(this.windowState)
+    fun setDirty() {
+        dirty = true
+    }
+
+    override fun clone(): Context = Context(this.windowState, this.node)
 
     operator fun invoke(block: Context.() -> Unit) = block()
+
+    private class StateNode<T>(val value: T?, val children: HashMap<ID, StateNode<T>>)
 }
