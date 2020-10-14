@@ -42,7 +42,9 @@ class Kape<P>(
     }
 
     fun frame(block: Kape<P>.() -> Unit) {
-        nextContext()
+        if (!nextContext()) {
+            error("Couldn't create new context")
+        }
         block()
         renderAndRelease()
     }

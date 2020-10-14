@@ -27,6 +27,9 @@ fun main() {
 
     // Main loop
     while (!glfwWindow.shouldClose) {
+        // Poll events & state etc
+        glfwWindow.update()
+
         // Clear screen
         KapeGL.clear()
 
@@ -34,9 +37,6 @@ fun main() {
         kape.frame {
             window()
         }
-
-        // Poll events & state etc
-        glfwWindow.update()
     }
 
     // Clean up resources
