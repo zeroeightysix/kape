@@ -8,6 +8,9 @@ private fun <T, R> Iterator<T>.map(mapper: (T) -> R) = object : Iterator<R> {
     override fun next(): R = mapper(this@map.next())
 }
 
+typealias FormatPrim = Pair<VertexFormat, PrimitiveType>
+typealias RenderEntry = Triple<FormatPrim, FloatArray, IntArray?>
+
 class Context(val windowState: WindowState) : Reproducible<Context> {
     /**
      * Whether or not the context was modified compared to the previous iteration of contexts
@@ -18,13 +21,13 @@ class Context(val windowState: WindowState) : Reproducible<Context> {
         dirty = true
     }
 
-    private val queue = ArrayDeque<() -> Triple<VertexFormat, PrimitiveType, FloatArray>>()
+    private val queue = ArrayDeque<() -> RenderEntry>()
 
-    fun push(supplier: () -> Triple<VertexFormat, PrimitiveType, FloatArray>) {
+    fun push(supplier: () -> RenderEntry) {
         queue.add(supplier)
     }
 
-    fun drawAll(): Iterator<Triple<VertexFormat, PrimitiveType, FloatArray>> = queue.iterator().map { it() }
+    fun drawAll(): Iterator<RenderEntry> = queue.iterator().map { it() }
 
     override fun createNext() = Context(this.windowState)
 

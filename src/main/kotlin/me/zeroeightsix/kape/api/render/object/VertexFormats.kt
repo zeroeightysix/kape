@@ -48,7 +48,7 @@ object VertexColour : VertexFormat {
                 floats.shoveVertex(zeroIdx, vex)
                 floats.shoveColour(zeroIdx + vertexCount, col)
             }
-            Triple(this@VertexColour, type, floats)
+            Triple(this@VertexColour to type, floats, null)
         }
     }
 

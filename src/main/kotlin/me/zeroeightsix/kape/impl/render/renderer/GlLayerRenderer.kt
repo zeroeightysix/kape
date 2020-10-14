@@ -2,16 +2,16 @@ package me.zeroeightsix.kape.impl.render.renderer
 
 import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.destroyAll
-import me.zeroeightsix.kape.api.render.`object`.PrimitiveType
 import me.zeroeightsix.kape.api.render.`object`.ShaderProgram
-import me.zeroeightsix.kape.api.render.`object`.VertexFormat
 import me.zeroeightsix.kape.api.render.bind.BindStack
 import me.zeroeightsix.kape.api.render.bind.NoBindStack
 import me.zeroeightsix.kape.api.render.renderer.LayerRenderer
 import me.zeroeightsix.kape.api.state.Context
+import me.zeroeightsix.kape.api.state.FormatPrim
 import me.zeroeightsix.kape.api.state.layer.Layer
 import me.zeroeightsix.kape.api.util.Destroy
 import me.zeroeightsix.kape.api.util.math.Vec2i
+import me.zeroeightsix.kape.impl.render.`object`.EBO
 import me.zeroeightsix.kape.impl.render.`object`.VAO
 import me.zeroeightsix.kape.impl.render.`object`.VBO
 import me.zeroeightsix.kape.impl.render.`object`.standardProgram
@@ -65,17 +65,17 @@ class GlLayerRenderer(
 }
 
 private class LayerGlNode : Destroy {
-    val batchMap = HashMap<Pair<VertexFormat, PrimitiveType>, PrimitiveRenderBatch>()
+    val batchMap = HashMap<FormatPrim, PrimitiveRenderBatch>()
     val children = HashMap<ID, LayerGlNode>()
 
     /**
      * Clear data, redraw from context
      */
     fun commit(context: Context, bindStack: BindStack) {
-        val batchedFloats = HashMap<Pair<VertexFormat, PrimitiveType>, MutableList<MutableList<Float>>>()
+        val batchedFloats = HashMap<FormatPrim, MutableList<MutableList<Float>>>()
 
-        context.drawAll().forEach { (format, primitiveType, floats) ->
-            val formatPrim = format to primitiveType
+        context.drawAll().forEach { (formatPrim, vertices, indices) ->
+            val (_, primitiveType) = formatPrim
             val lists = batchedFloats.getOrPut(formatPrim) { mutableListOf() }
             // Determine what list to append to. If batchable, the first one (or the one we create if none),
             // and if not batchable always a new list.
@@ -83,7 +83,7 @@ private class LayerGlNode : Destroy {
                 lists.first()
             else
                 mutableListOf<Float>().also { lists.add(it) }
-            appendTo.addAll(floats.asIterable())
+            appendTo.addAll(vertices.asIterable())
         }
 
         batchedFloats.forEach { (formatPrim, batches) ->
@@ -158,7 +158,7 @@ private class LayerGlNode : Destroy {
         override fun destroy() = nodes.forEach(Destroy::destroy)
     }
 
-    private class PrimitiveRenderedNode : Destroy {
+    private class PrimitiveRenderedNode(val ebo: EBO? = null) : Destroy {
         val vao = VAO()
         val vbo = VBO()
 

@@ -5,6 +5,7 @@ import me.zeroeightsix.kape.api.render.`object`.Buffer
 import org.lwjgl.opengl.GL30.*
 
 typealias VBO = VertexBufferObject
+typealias EBO = ElementBufferObject
 typealias VAO = VertexArrayObject
 
 abstract class GlBuffer : Buffer {
@@ -43,6 +44,12 @@ class VertexBufferObject : GlBuffer() {
     override val bindTypeId: ID = VertexBufferObject::class
 
     override val type: Int = GL_ARRAY_BUFFER
+}
+
+class ElementBufferObject : GlBuffer() {
+    override val bindTypeId: ID = ElementBufferObject::class
+
+    override val type: Int = GL_ELEMENT_ARRAY_BUFFER
 }
 
 class VertexArrayObject : Buffer {
