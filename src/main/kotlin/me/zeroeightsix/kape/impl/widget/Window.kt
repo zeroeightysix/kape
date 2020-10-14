@@ -1,4 +1,4 @@
-package me.zeroeightsix.kape.impl
+package me.zeroeightsix.kape.impl.widget
 
 import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.render.`object`.PrimitiveType.LINES

@@ -3,7 +3,7 @@ import me.zeroeightsix.kape.api.state.BasicWindowState
 import me.zeroeightsix.kape.impl.kapeCommon
 import me.zeroeightsix.kape.impl.render.KapeGL
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow
-import me.zeroeightsix.kape.impl.window
+import me.zeroeightsix.kape.impl.widget.window
 
 fun main() {
 
