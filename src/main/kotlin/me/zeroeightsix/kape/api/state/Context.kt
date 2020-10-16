@@ -12,7 +12,10 @@ private fun <T, R> Iterator<T>.map(mapper: (T) -> R) = object : Iterator<R> {
 typealias FormatPrim = Pair<VertexFormat, PrimitiveType>
 typealias RenderEntry = Triple<FormatPrim, FloatArray, IntArray?>
 
-class Context private constructor(val windowState: WindowState, private val node: StateNode<HashMap<ID, Any>>) :
+class Context private constructor(
+    val windowState: WindowState,
+    private val node: StateNode<HashMap<ID, HashMap<ID, Any>>>
+) :
     Reproducible<Context, ID>, Clone<Context> {
     constructor(windowState: WindowState) : this(windowState, StateNode(hashMapOf(), hashMapOf()))
 
@@ -24,11 +27,12 @@ class Context private constructor(val windowState: WindowState, private val node
     private val queue = ArrayDeque<() -> RenderEntry>()
 
     @JvmName("getStateAny")
-    fun getState(id: ID) = this.node.value?.get(id)
+    fun getState(ownerId: ID, stateID: ID) = this.node.value?.get(ownerId)?.get(stateID)
 
-    fun <T : Any> setState(id: ID, value: T) = this.node.value?.set(id, value) != null
+    fun <T : Any> setState(ownerId: ID, stateId: ID, value: T) =
+        this.node.value?.getOrPut(ownerId) { hashMapOf() }?.set(stateId, value)
 
-    inline fun <reified T> getState(id: ID) = this.getState(id) as? T
+    inline fun <reified T> getState(ownerId: ID, stateId: ID) = this.getState(ownerId, stateId) as? T
 
     override fun createNext(requirements: ID) = Context(
         this.windowState,

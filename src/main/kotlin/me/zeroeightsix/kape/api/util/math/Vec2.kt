@@ -9,6 +9,15 @@ typealias Vec2d = Vec2<Double>
 typealias Vec2i = Vec2<Int>
 
 // Unfortunately [Number] doesn't have any math functions, so we can't overload generically.
+val Vec2f.justX
+    get() = Vec2f(this.x, 0f)
+val Vec2f.justY
+    get() = Vec2f(0f, this.y)
+
+fun Vec2f.offsets(inclusive: Boolean = false, vararg offsets: Vec2f) =
+    (if (inclusive) mutableListOf(this) else mutableListOf())
+        .apply { addAll(offsets.map { this@offsets + it }) }.toTypedArray()
+
 operator fun Vec2f.unaryMinus() = Vec2f(-this.x, -this.y)
 
 operator fun Vec2f.times(multiplier: Float) = Vec2f(this.x * multiplier, this.y * multiplier)

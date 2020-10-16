@@ -58,6 +58,16 @@ object VertexColour : VertexFormat {
         }
     }
 
+    fun Context.push(
+        type: PrimitiveType,
+        vertices: Array<out Vertex>,
+        indices: IntArray? = null,
+        colour: Colour = black
+    ) {
+        val vAttributes = vertices.map { it to colour }.toTypedArray()
+        this.push(type, vAttributes, indices)
+    }
+
     override fun setVertexAttributePointers() {
         fun vertexAttribPointer(
             index: Int,
