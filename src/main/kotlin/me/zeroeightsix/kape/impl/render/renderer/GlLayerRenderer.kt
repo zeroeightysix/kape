@@ -151,14 +151,14 @@ private class LayerGlNode : Destroy {
         protected val vao = VAO()
         protected val vbo = VBO()
 
-        protected open fun drawInternal() {
+        protected open fun drawInternal(bindStack: BindStack) {
             GL11.glDrawArrays(this.type.gl, 0, this.size)
         }
 
         override fun draw(bindStack: BindStack) {
             with(bindStack) {
                 vao.bindScoped {
-                    drawInternal()
+                    drawInternal(bindStack)
                 }
             }
         }
@@ -194,9 +194,12 @@ private class LayerGlNode : Destroy {
             }
         }
 
-        override fun drawInternal() {
-            ebo.bind()
-            GL15.glDrawElements(this.type.gl, this.size, GL11.GL_UNSIGNED_INT, 0)
+        override fun drawInternal(bindStack: BindStack) {
+            with(bindStack) {
+                ebo.bindScoped {
+                    GL15.glDrawElements(type.gl, size, GL11.GL_UNSIGNED_INT, 0)
+                }
+            }
         }
 
         override fun destroy() {
