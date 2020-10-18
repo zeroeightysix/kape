@@ -1,6 +1,7 @@
 package me.zeroeightsix.kape.api.render.`object`
 
 import me.zeroeightsix.kape.api.state.Context
+import me.zeroeightsix.kape.api.state.RenderEntry
 import me.zeroeightsix.kape.api.util.*
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL20
@@ -54,7 +55,7 @@ object VertexColour : VertexFormat {
                 floats.shoveVertex(zeroIdx, vex)
                 floats.shoveColour(zeroIdx + vertexCount, col)
             }
-            Triple(this@VertexColour to type, floats, indices)
+            RenderEntry(Context.RenderFormat(this@VertexColour, type, indices != null), floats, indices)
         }
     }
 
