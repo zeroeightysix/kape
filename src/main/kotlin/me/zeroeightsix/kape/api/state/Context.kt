@@ -22,6 +22,7 @@ class Context private constructor(
      * Whether or not the context was modified compared to the previous iteration of contexts
      */
     var dirty = false
+        private set // Can only ever be set to true through the setDirty method
 
     private val queue = ArrayDeque<() -> RenderEntry>()
 
