@@ -4,6 +4,7 @@ import me.zeroeightsix.kape.api.state.BasicWindowState
 import me.zeroeightsix.kape.api.state.Context
 import me.zeroeightsix.kape.impl.render.KapeGL
 import me.zeroeightsix.kape.impl.render.renderer.GlLayerRenderer
+import me.zeroeightsix.kape.impl.util.GlState
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow
 import me.zeroeightsix.kape.impl.widget.window
 
@@ -26,6 +27,9 @@ fun main() {
     // Set the kape window state that will be used. Mind that if others are using kapeCommon, that you will be
     // overwriting their window state (or they will be overriding yours)
     kape.windowState = windowState
+
+    // Set the GL state to match that which kape needs.
+    GlState.kapeState.apply()
 
     // Main loop
     while (!glfwWindow.shouldClose) {
