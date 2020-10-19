@@ -6,12 +6,9 @@ import me.zeroeightsix.kape.api.util.Destroy
 import me.zeroeightsix.kape.api.util.math.Vec2i
 import me.zeroeightsix.kape.api.util.math.has
 import me.zeroeightsix.kape.api.util.window.NativeWindow
+import org.lwjgl.glfw.*
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.glfw.GLFWCharCallback
-import org.lwjgl.glfw.GLFWCursorPosCallback
-import org.lwjgl.glfw.GLFWFramebufferSizeCallback
-import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil.NULL
 import me.zeroeightsix.kape.api.state.KeyAction as ApiKeyAction
@@ -20,10 +17,17 @@ import me.zeroeightsix.kape.api.state.KeyMods as ApiKeyMods
 /**
  * A generic key callback. Returns true if the action was handled, and thus any other key callbacks should not take action.
  */
-typealias KeyCallback = (window: Long, key: Int, scancode: Int, action: GlfwWindow.KeyAction, mods: GlfwWindow.KeyMods) -> Boolean
+typealias KeyCallback = (window: Long, key: Int, scancode: Int, action: GlfwWindow.Action, mods: GlfwWindow.KeyMods) -> Boolean
 typealias ResizeCallback = (window: Long, width: Int, height: Int) -> Unit
 typealias CursorPositionCallback = (window: Long, x: Double, y: Double) -> Unit
 typealias CharCallback = (window: Long, char: Char) -> Unit
+typealias MouseButtonCallback = (window: Long, button: Int, action: GlfwWindow.Action?, mods: Int) -> Unit
+
+private fun MouseButtonCallback.asGlfwMousePressCallback() = object : GLFWMouseButtonCallback() {
+    override fun invoke(window: Long, button: Int, action: Int, mods: Int) {
+        this@asGlfwMousePressCallback(window, button, action.glfwAction, mods)
+    }
+}
 
 private fun KeyCallback.asGlfwKeyCallback() = object : GLFWKeyCallback() {
     override fun invoke(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
@@ -52,7 +56,7 @@ private fun CharCallback.asGlfwCharCallback() = object : GLFWCharCallback() {
 private fun Boolean.asGlfwBool() = if (this) GLFW_TRUE else GLFW_FALSE
 
 private val Int.glfwAction
-    get() = GlfwWindow.KeyAction.fromInt(this)
+    get() = GlfwWindow.Action.fromInt(this)
 
 private val Int.glfwMods
     get() = GlfwWindow.KeyMods(this)
@@ -100,6 +104,10 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
         glfwSetCharCallback(handle, callback.asGlfwCharCallback())
     }
 
+    fun setMouseButtonCallback(callback: MouseButtonCallback) {
+        glfwSetMouseButtonCallback(handle, callback.asGlfwMousePressCallback())
+    }
+
     @Suppress("MemberVisibilityCanBePrivate")
     class Builder internal constructor() {
         private var hints = mutableMapOf<Int, Int>()
@@ -139,6 +147,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
         }
         var cursorPosCallback: CursorPositionCallback? = null
         var charCallback: CharCallback? = null
+        var mouseButtonCallback: MouseButtonCallback? = null
 
         fun defaults(): Builder {
             resizable = true
@@ -182,6 +191,12 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
                 previousCharCallback?.invoke(window, char)
                 state.pushChar(char)
             }
+
+            val previousMouseButtonCallback = this.mouseButtonCallback
+            this.mouseButtonCallback = { window, button, action, mods ->
+                previousMouseButtonCallback?.invoke(window, button, action, mods)
+                state.pushMouseEvent(WindowState.MouseEvent(button, action, mods))
+            }
         }
 
         fun build(): Result<GlfwWindow> {
@@ -203,6 +218,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
             this.resizeCallback?.run { window.setResizeCallback(this) }
             this.cursorPosCallback?.run { window.setCursorsPosCallback(this) }
             this.charCallback?.run { window.setCharCallback(this) }
+            this.mouseButtonCallback?.run { window.setMouseButtonCallback(this) }
 
             if (show)
                 glfwShowWindow(handle)
@@ -215,7 +231,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
     }
 
     @Suppress("unused")
-    enum class KeyAction(val glfw: Int, val api: ApiKeyAction) {
+    enum class Action(val glfw: Int, val api: ApiKeyAction) {
         PRESS(GLFW_PRESS, ApiKeyAction.PRESS),
         RELEASE(GLFW_RELEASE, ApiKeyAction.RELEASE),
         REPEAT(GLFW_REPEAT, ApiKeyAction.REPEAT);
@@ -223,7 +239,7 @@ open class GlfwWindow private constructor(protected val handle: Long) : NativeWi
         companion object {
             private val actionMap = values().map { it.glfw to it }.toMap()
 
-            fun fromInt(int: Int): KeyAction? = actionMap[int]
+            fun fromInt(int: Int): Action? = actionMap[int]
         }
     }
 

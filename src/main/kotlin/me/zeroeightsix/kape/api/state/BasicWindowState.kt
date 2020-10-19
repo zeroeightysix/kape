@@ -1,6 +1,7 @@
 package me.zeroeightsix.kape.api.state
 
 import me.zeroeightsix.kape.api.state.WindowState.KeyEvent
+import me.zeroeightsix.kape.api.state.WindowState.MouseEvent
 import me.zeroeightsix.kape.api.util.math.Vec2d
 import me.zeroeightsix.kape.api.util.math.Vec2i
 import me.zeroeightsix.kape.api.util.math.minus
@@ -15,6 +16,7 @@ class BasicWindowState : WindowState {
 
     override val charQueue = ArrayDeque<Char>()
     override val keyQueue = ArrayDeque<KeyEvent>()
+    override val mouseQueue = ArrayDeque<MouseEvent>()
     override val mouse
         get() = _mouse
     override val mouseDelta: Vec2d
@@ -36,6 +38,10 @@ class BasicWindowState : WindowState {
 
     fun pushKeyEvent(event: KeyEvent) {
         this.keyQueue.add(event)
+    }
+
+    fun pushMouseEvent(event: MouseEvent) {
+        this.mouseQueue.add(event)
     }
 
     fun pushChars(vararg chars: Char) = chars.forEach(this::pushChar)
@@ -65,6 +71,8 @@ object UninitialisedWindowState : WindowState {
     override val mouseDelta: Vec2d
         get() = error()
     override val keyQueue: ArrayDeque<KeyEvent>
+        get() = error()
+    override val mouseQueue: ArrayDeque<MouseEvent>
         get() = error()
 
     override fun clear() = Unit
