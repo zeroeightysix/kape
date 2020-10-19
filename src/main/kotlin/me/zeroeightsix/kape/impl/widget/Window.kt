@@ -12,6 +12,8 @@ import me.zeroeightsix.kape.api.util.Colour
 import me.zeroeightsix.kape.api.util.blue
 import me.zeroeightsix.kape.api.util.copy
 import me.zeroeightsix.kape.api.util.math.*
+import me.zeroeightsix.kape.impl.util.window.GlfwWindow.Action.PRESS
+import me.zeroeightsix.kape.impl.util.window.GlfwWindow.Action.RELEASE
 
 private const val transparentGrey: Colour = 0x111111EEu
 
@@ -51,7 +53,7 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
     val resizeKnobSize =
         20f // todo: should this be configurable? probably, but do it through 'style' (à la dear imgui), or per window?
     val resizeHovered = ctx.getState(id, "resizeHovered") != null
-    if (currentResizing == id || currentResizing == null) {
+    val resizeShown = if (currentResizing == id || currentResizing == null) {
         val (x, y) = ctx.windowState.mouse
 
         var colour = blue.copy(a = 128u)
@@ -93,10 +95,30 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
             }
         }
 
-        if (ctx.setState(id, "resizeShown", true))
-            ctx.setDirty()
+        true
     } else {
-        if (ctx.setState(id, "resizeShown", false))
-            ctx.setDirty()
+        false
     }
+
+    if (currentResizing == id && ctx.windowState.mouseDelta != Vec2d(0.0)) {
+        if (ctx.windowState.mouseQueue.lastOrNull()?.let {
+                if (it.button == 0 && it.action == RELEASE) return@let false
+                true
+            } == false) {
+            ctx.removeState(null, "resizingWindow".private)
+        } else {
+            ctx.setDirty()
+            ctx.setState(id, "size".private, windowSize + ctx.windowState.mouseDelta.toVec2f())
+        }
+    } else if (currentResizing == null && resizeHovered) {
+        ctx.windowState.mouseQueue.lastOrNull()?.let {
+            if (it.button == 0 && it.action == PRESS) {
+                ctx.setState(null, "resizingWindow".private, id)
+                ctx.windowState.mouseQueue.removeLast()
+            }
+        }
+    }
+
+    if (ctx.setState(id, "resizeShown", resizeShown))
+        ctx.setDirty()
 }
