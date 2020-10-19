@@ -40,4 +40,13 @@ operator fun Vec2d.minus(other: Vec2d) = Vec2d(this.x - other.x, this.y - other.
 @JvmName("minusI")
 operator fun Vec2i.minus(other: Vec2i) = Vec2i(this.x - other.x, this.y - other.y)
 
+@JvmName("divD")
+operator fun Vec2d.div(other: Vec2d) = Vec2d(this.x / other.x, this.y / other.y)
+
+@JvmName("divI")
+operator fun Vec2i.div(other: Vec2i) = Vec2i(this.x / other.x, this.y / other.y)
+
+@JvmName("divF")
+operator fun Vec2f.div(other: Vec2f) = Vec2f(this.x / other.x, this.y / other.y)
+
 fun Vec2d.toVec2f() = Vec2f(this.x.toFloat(), this.y.toFloat())

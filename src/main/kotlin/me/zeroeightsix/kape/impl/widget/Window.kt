@@ -14,24 +14,29 @@ import me.zeroeightsix.kape.api.util.copy
 import me.zeroeightsix.kape.api.util.math.*
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow.Action.PRESS
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow.Action.RELEASE
+import kotlin.math.min
 
 private const val transparentGrey: Colour = 0x111111EEu
 
-private val String.private
+private val sizeKey = "size".private
+private val positionKey = "position".private
+private val resizingWindowKey = "isResizingWindow".private
+private val resizeHoveredKey = "resizeHovered".private
+private val resizeShownKey = "resizeShown".private
+
+private val String.private: ID
     get() = "kape:__$this"
+
+private operator fun <A, B> Pair<A, B>?.component1() = this?.first
+private operator fun <A, B> Pair<A, B>?.component2() = this?.second
 
 fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
     val ctx = this.context
 
-    val windowSize = ctx.getState<Vec2f>(id, "size".private) ?: Vec2f(100f).also {
-        // Immediately set it if it was not present
-        ctx.setState(id, "size", it)
-    }
+    val windowSize = ctx.getStateOrPut(id, sizeKey) { Vec2f(100f) }
+    val windowPosition = ctx.getStateOrPut(id, positionKey) { Vec2f(10f) }
 
-    val windowPosition = ctx.getState<Vec2f>(id, "position".private) ?: Vec2f(10f).also {
-        ctx.setState(id, "position", it)
-    }
-
+    // Draw window frame
     ctx {
         VertexColour {
             push(
@@ -48,12 +53,12 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
         }
     }
 
-    // owner == null: 'global layer' state
-    val currentResizing = ctx.getState<ID>(null, "resizingWindow".private)
-    val resizeKnobSize =
-        20f // todo: should this be configurable? probably, but do it through 'style' (à la dear imgui), or per window?
-    val resizeHovered = ctx.getState(id, "resizeHovered") != null
-    val resizeShown = if (currentResizing == id || currentResizing == null) {
+    val (currentResizing, resizeAnchor) = ctx.getState<Pair<ID, Vec2f>?>(null, resizingWindowKey)
+
+    // todo: should this be configurable? probably, but do it through 'style' (à la dear imgui), or per window?
+    val resizeKnobSize = min(min(windowSize.x, windowSize.y), 20f)
+    val resizeHovered = ctx.getState(id, resizeHoveredKey) != null
+    val resizeShown = if (currentResizing == null || currentResizing == id) {
         val (x, y) = ctx.windowState.mouse
 
         var colour = blue.copy(a = 128u)
@@ -65,7 +70,7 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
                 // of that equal side.
                 if ((windowPosition.x + windowSize.x - x) + (windowPosition.y + windowSize.y - y) <= resizeKnobSize) {
                     colour = colour.copy(a = 255u)
-                    if (ctx.setState(id, "resizeHovered", Unit)) {
+                    if (ctx.setState(id, resizeHoveredKey, Unit)) {
                         ctx.setDirty()
                     }
                     return true
@@ -76,10 +81,11 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
 
         // If the resize knob is not hovered, and removing the hovered state did something (i.e. last frame it was
         // hovered), set context dirty.
-        if (!checkHovered() && resizeHovered && ctx.removeState(id, "resizeHovered")) {
+        if (!checkHovered() && resizeHovered && ctx.removeState(id, resizeHoveredKey)) {
             ctx.setDirty()
         }
 
+        // Draw the resize knob
         ctx {
             VertexColour {
                 push(
@@ -100,25 +106,30 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
         false
     }
 
+    if (ctx.setState(id, resizeShownKey, resizeShown))
+        ctx.setDirty()
+
     if (currentResizing == id && ctx.windowState.mouseDelta != Vec2d(0.0)) {
+        // Currently resizing this window and mouse was moved
         if (ctx.windowState.mouseQueue.lastOrNull()?.let {
                 if (it.button == 0 && it.action == RELEASE) return@let false
                 true
             } == false) {
-            ctx.removeState(null, "resizingWindow".private)
+            ctx.removeState(null, resizingWindowKey)
+            ctx.windowState.mouseQueue.removeLast()
         } else {
+            val newSize = (ctx.windowState.mouse.toVec2f() - windowPosition) + resizeAnchor!!
+            ctx.setState(id, sizeKey, newSize)
             ctx.setDirty()
-            ctx.setState(id, "size".private, windowSize + ctx.windowState.mouseDelta.toVec2f())
         }
     } else if (currentResizing == null && resizeHovered) {
         ctx.windowState.mouseQueue.lastOrNull()?.let {
             if (it.button == 0 && it.action == PRESS) {
-                ctx.setState(null, "resizingWindow".private, id)
+                val distFromKnob = (windowPosition + windowSize) - ctx.windowState.mouse.toVec2f()
+                ctx.setState(null, resizingWindowKey, id to distFromKnob)
                 ctx.windowState.mouseQueue.removeLast()
             }
         }
     }
 
-    if (ctx.setState(id, "resizeShown", resizeShown))
-        ctx.setDirty()
 }

@@ -36,6 +36,12 @@ class Context private constructor(
 
     inline fun <reified T> getState(ownerId: ID?, stateId: ID) = this.getState(ownerId, stateId) as? T
 
+    inline fun <reified T : Any> getStateOrPut(ownerId: ID?, stateId: ID, orPut: () -> T): T {
+        return getState<T>(ownerId, stateId) ?: orPut().also {
+            setState(ownerId, stateId, it)
+        }
+    }
+
     override fun createNext(requirements: ID) = Context(
         this.windowState,
         this.node.children.getOrPut(requirements) { StateNode(hashMapOf(), hashMapOf()) }
