@@ -14,7 +14,8 @@ typealias RenderEntry = Triple<Context.RenderFormat, FloatArray, IntArray?>
 
 class Context private constructor(
     val windowState: WindowState,
-    private val node: StateNode<HashMap<ID?, HashMap<ID, Any>>>
+    private val node: StateNode<HashMap<ID?, HashMap<ID, Any>>>,
+    _dirty: Boolean = false
 ) :
     Reproducible<Context, ID>, Clone<Context> {
     constructor(windowState: WindowState) : this(windowState, StateNode(hashMapOf(), hashMapOf()))
@@ -22,8 +23,11 @@ class Context private constructor(
     /**
      * Whether or not the context was modified compared to the previous iteration of contexts
      */
-    var dirty = false
+    var dirty = _dirty
         private set // Can only ever be set to true through the setDirty method
+
+    var deepDirty = _dirty
+        private set
 
     private val queue = ArrayDeque<() -> RenderEntry>()
 
@@ -76,11 +80,15 @@ class Context private constructor(
         dirty = true
     }
 
+    fun setDeepDirty() {
+        deepDirty = true
+    }
+
     fun dirtyIf(block: () -> Boolean) = dirtyIf(block())
 
     fun dirtyIf(boolean: Boolean) = if (boolean) setDirty() else Unit
 
-    override fun clone(): Context = Context(this.windowState, this.node)
+    override fun clone(): Context = Context(this.windowState, this.node, this.deepDirty)
 
     operator fun invoke(block: Context.() -> Unit) = block()
 
