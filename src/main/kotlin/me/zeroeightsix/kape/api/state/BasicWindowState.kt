@@ -56,6 +56,7 @@ class BasicWindowState : WindowState {
         this._mouseDelta = noMouseDelta
         this.charQueue.clear()
         this.keyQueue.clear()
+        this.mouseQueue.clear()
     }
 }
 
