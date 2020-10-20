@@ -14,7 +14,6 @@ import me.zeroeightsix.kape.api.util.copy
 import me.zeroeightsix.kape.api.util.math.*
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow.Action.PRESS
-import kotlin.math.min
 
 private const val transparentGrey: Colour = 0x111111EEu
 
@@ -44,7 +43,7 @@ private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
     var bottomRight = position + size
     val resizeHandleSize by ctx.getPropertyDefaulted(id, resizeHandleSizeKey, true) {
         // todo: should this be configurable? probably, but do it through 'style' (à la dear imgui), or per window?
-        min(min(size.x, size.y), 20f)
+        20f
     }
 
     val mouse = ctx.windowState.mouse.toVec2f()
@@ -63,7 +62,7 @@ private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
             ctx.windowState.mouseQueue.removeLast()
             currentResizing = null
         } else {
-            size = ctx.windowState.mouse.toVec2f() - position + resizeAnchor!!
+            size = (ctx.windowState.mouse.toVec2f() - position + resizeAnchor!!) max Vec2f(resizeHandleSize)
             bottomRight = position + size
         }
     }
