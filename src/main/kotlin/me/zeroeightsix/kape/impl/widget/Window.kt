@@ -39,9 +39,14 @@ private operator fun <A, B> Pair<A, B>?.component2() = this?.second
 private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
     var (currentResizing, resizeAnchor) = ctx.getState<Pair<ID, Vec2f>?>(null, resizingWindowKey)
 
-    var size = ctx.getStateOrPut(id, sizeKey) { Vec2f(100f) }
-    val position = ctx.getStateOrPut(id, positionKey) { Vec2f(10f) }
+    var size by ctx.getPropertyDefaulted(id, sizeKey, true) { Vec2f(100f) }
+    val position by ctx.getPropertyDefaulted(id, positionKey, true) { Vec2f(10f) }
     var bottomRight = position + size
+    val resizeHandleSize by ctx.getPropertyDefaulted(id, resizeHandleSizeKey, true) {
+        // todo: should this be configurable? probably, but do it through 'style' (à la dear imgui), or per window?
+        min(min(size.x, size.y), 20f)
+    }
+
     val mouse = ctx.windowState.mouse.toVec2f()
 
     val resizeHandleVisible = (currentResizing == null || currentResizing == id).also {
@@ -60,13 +65,7 @@ private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
         } else {
             size = ctx.windowState.mouse.toVec2f() - position + resizeAnchor!!
             bottomRight = position + size
-            ctx.dirtyIf(ctx.setState(id, sizeKey, size))
         }
-    }
-
-    // todo: should this be configurable? probably, but do it through 'style' (à la dear imgui), or per window?
-    val resizeHandleSize = min(min(size.x, size.y), 20f).also {
-        ctx.dirtyIf(ctx.setState(id, resizeHandleSizeKey, it))
     }
 
     val resizeHoverActive = (if (resizeHandleVisible) {

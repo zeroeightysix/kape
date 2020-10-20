@@ -3,6 +3,7 @@ package me.zeroeightsix.kape.api.state
 import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.render.`object`.PrimitiveType
 import me.zeroeightsix.kape.api.render.`object`.VertexFormat
+import kotlin.reflect.KProperty
 
 private fun <T, R> Iterator<T>.map(mapper: (T) -> R) = object : Iterator<R> {
     override fun hasNext(): Boolean = this@map.hasNext()
@@ -33,6 +34,24 @@ class Context private constructor(
         this.node.value?.getOrPut(ownerId) { hashMapOf() }?.put(stateId, value) != value
 
     fun removeState(ownerId: ID?, stateId: ID) = this.node.value?.get(ownerId)?.remove(stateId) != null
+
+    inline fun <reified T : Any?> getProperty(
+        ownerId: ID?,
+        stateId: ID,
+        dirtyOnChange: Boolean = false
+    ) = Property(ownerId, stateId, T::class.java, dirtyOnChange)
+
+    inline fun <reified T : Any> getPropertyDefaulted(
+        ownerId: ID?,
+        stateId: ID,
+        dirtyOnChange: Boolean = false,
+        crossinline default: () -> T,
+    ) = Property(ownerId, stateId, T::class.java, dirtyOnChange).also {
+        if (getState(ownerId, stateId) == null) {
+            setState(ownerId, stateId, default())
+            if (dirtyOnChange) setDirty()
+        }
+    }
 
     inline fun <reified T> getState(ownerId: ID?, stateId: ID) = this.getState(ownerId, stateId) as? T
 
@@ -67,6 +86,25 @@ class Context private constructor(
 
     data class RenderFormat(val vertexFormat: VertexFormat, val primitiveType: PrimitiveType, val ebo: Boolean) {
         val batchable = this.primitiveType.batch
+    }
+
+    inner class Property<T>(
+        private val ownerId: ID? = null,
+        private val stateId: ID,
+        private val clazz: Class<T>,
+        private val dirtyOnChange: Boolean = false
+    ) {
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
+            if (value == null)
+                removeState(ownerId, stateId)
+            else if ((this@Context.node.value?.getOrPut(ownerId) { hashMapOf() }
+                    ?.put(stateId, value) != value) && dirtyOnChange) {
+                this@Context.setDirty()
+            }
+        }
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): T =
+            clazz.cast(this@Context.getState(ownerId, stateId))
     }
 
     private class StateNode<T>(val value: T?, val children: HashMap<ID, StateNode<T>>)
