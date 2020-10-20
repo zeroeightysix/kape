@@ -12,8 +12,8 @@ import me.zeroeightsix.kape.api.util.Colour
 import me.zeroeightsix.kape.api.util.blue
 import me.zeroeightsix.kape.api.util.copy
 import me.zeroeightsix.kape.api.util.math.*
+import me.zeroeightsix.kape.impl.util.window.GlfwWindow
 import me.zeroeightsix.kape.impl.util.window.GlfwWindow.Action.PRESS
-import me.zeroeightsix.kape.impl.util.window.GlfwWindow.Action.RELEASE
 import kotlin.math.min
 
 private const val transparentGrey: Colour = 0x111111EEu
@@ -21,8 +21,8 @@ private const val transparentGrey: Colour = 0x111111EEu
 private val sizeKey = "size".private
 private val positionKey = "position".private
 private val resizingWindowKey = "isResizingWindow".private
-private val resizeHoveredKey = "resizeHovered".private
-private val resizeShownKey = "resizeShown".private
+private val resizeActiveKey = "resizeActive".private
+private val resizeVisibleKey = "resizeVisible".private
 private val resizeHandleSizeKey = "resizeHandleSize".private
 
 private val String.private: ID
@@ -37,15 +37,31 @@ private operator fun <A, B> Pair<A, B>?.component2() = this?.second
  * @return `true` if the resize handle should be drawn
  */
 private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
-    val (currentResizing, resizeAnchor) = ctx.getState<Pair<ID, Vec2f>?>(null, resizingWindowKey)
+    var (currentResizing, resizeAnchor) = ctx.getState<Pair<ID, Vec2f>?>(null, resizingWindowKey)
 
-    val size = ctx.getStateOrPut(id, sizeKey) { Vec2f(100f) }
+    var size = ctx.getStateOrPut(id, sizeKey) { Vec2f(100f) }
     val position = ctx.getStateOrPut(id, positionKey) { Vec2f(10f) }
-    val bottomRight = position + size
+    var bottomRight = position + size
     val mouse = ctx.windowState.mouse.toVec2f()
 
-    val shouldShowResizeHandle = (currentResizing == null || currentResizing == id).also {
-        ctx.dirtyIf(ctx.setState(id, resizeShownKey, it))
+    val resizeHandleVisible = (currentResizing == null || currentResizing == id).also {
+        ctx.dirtyIf(ctx.setState(id, resizeVisibleKey, it))
+    }
+
+    if (currentResizing == id) {
+        // Currently resizing this window and mouse was moved
+        if (ctx.windowState.mouseQueue.lastOrNull()?.let {
+                if (it.button == 0 && it.action == GlfwWindow.Action.RELEASE) return@let false
+                true
+            } == false) {
+            ctx.removeState(null, resizingWindowKey)
+            ctx.windowState.mouseQueue.removeLast()
+            currentResizing = null
+        } else {
+            size = ctx.windowState.mouse.toVec2f() - position + resizeAnchor!!
+            bottomRight = position + size
+            ctx.dirtyIf(ctx.setState(id, sizeKey, size))
+        }
     }
 
     // todo: should this be configurable? probably, but do it through 'style' (à la dear imgui), or per window?
@@ -53,29 +69,17 @@ private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
         ctx.dirtyIf(ctx.setState(id, resizeHandleSizeKey, it))
     }
 
-    val resizeHoverActive = (if (shouldShowResizeHandle) {
+    val resizeHoverActive = (if (resizeHandleVisible) {
         val (x, y) = mouse
         // Only activate resize handle if we're currently resizing this window, or if nothing is being resized
-        if (mouse < bottomRight) {
+        if (mouse <= bottomRight) {
             (bottomRight.x - x) + (bottomRight.y - y) <= resizeHandleSize
         } else false
     } else false).also {
-        ctx.dirtyIf(ctx.setState(id, resizeHoveredKey, it))
+        ctx.dirtyIf(ctx.setState(id, resizeActiveKey, it))
     }
 
-    if (currentResizing == id) {
-        // Currently resizing this window and mouse was moved
-        if (ctx.windowState.mouseQueue.lastOrNull()?.let {
-                if (it.button == 0 && it.action == RELEASE) return@let false
-                true
-            } == false) {
-            ctx.removeState(null, resizingWindowKey)
-            ctx.windowState.mouseQueue.removeLast()
-        } else {
-            val newSize = (ctx.windowState.mouse.toVec2f() - position) + resizeAnchor!!
-            ctx.dirtyIf(ctx.setState(id, sizeKey, newSize))
-        }
-    } else if (currentResizing == null && resizeHoverActive) {
+    if (currentResizing == null && resizeHoverActive) {
         ctx.windowState.mouseQueue.lastOrNull()?.let {
             if (it.button == 0 && it.action == PRESS) {
                 val distFromKnob = bottomRight - ctx.windowState.mouse.toVec2f()
@@ -85,7 +89,7 @@ private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
         }
     }
 
-    return shouldShowResizeHandle
+    return resizeHandleVisible
 }
 
 fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
@@ -114,7 +118,7 @@ fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
 
     if (resizeHandleVisible) {
         val handleSize = ctx.getState<Float>(id, resizeHandleSizeKey)!!
-        val colour = if (ctx.getStateOrPut(id, resizeHoveredKey) { false }) {
+        val colour = if (ctx.getStateOrPut(id, resizeActiveKey) { false }) {
             blue
         } else {
             blue.copy(a = 128u)
