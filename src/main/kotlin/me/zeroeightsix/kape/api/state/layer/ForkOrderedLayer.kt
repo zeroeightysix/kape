@@ -19,3 +19,5 @@ abstract class ForkOrderedLayer<P>(override val parent: Layer<P>? = null) : Laye
     }
 
 }
+
+class ContextForkOrderedLayer<P>(parent: Layer<P>? = null, override val context: P) : ForkOrderedLayer<P>(parent)

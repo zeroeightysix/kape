@@ -6,7 +6,9 @@ import me.zeroeightsix.kape.api.ID
 import me.zeroeightsix.kape.api.render.`object`.PrimitiveType.TRIANGLES
 import me.zeroeightsix.kape.api.render.`object`.VertexColour
 import me.zeroeightsix.kape.api.render.`object`.invoke
+import me.zeroeightsix.kape.api.state.Clone
 import me.zeroeightsix.kape.api.state.Context
+import me.zeroeightsix.kape.api.state.layer.ContextForkOrderedLayer
 import me.zeroeightsix.kape.api.state.layer.Layer
 import me.zeroeightsix.kape.api.util.Colour
 import me.zeroeightsix.kape.api.util.blue
@@ -25,10 +27,22 @@ private val resizeVisibleKey = "resizeVisible".private
 private val resizeHandleSizeKey = "resizeHandleSize".private
 
 private val String.private: ID
-    get() = "kape:__$this"
+    get() = "kape:$this"
 
 private operator fun <A, B> Pair<A, B>?.component1() = this?.first
 private operator fun <A, B> Pair<A, B>?.component2() = this?.second
+
+private fun <C : Clone<C>> Layer<C>.forkAndScope(
+    id: ID,
+    newLayer: Layer<C> = ContextForkOrderedLayer(
+        this,
+        this.context.clone()
+    ),
+    block: Layer<C>.() -> Unit
+) {
+    this.fork(newLayer, id)
+    newLayer.block()
+}
 
 /**
  * Enact the resizing behaviour for a window. Will mutate the context to match new state, but doesn't draw anything.
@@ -90,7 +104,7 @@ private fun resizeBehaviour(ctx: Context, id: ID): Boolean {
     return resizeHandleVisible
 }
 
-fun Layer<Context>.window(title: String = "Kape window", id: ID = title) {
+fun Layer<Context>.window(title: String = "Kape window", id: ID = title) = forkAndScope(id) {
     val ctx = this.context
 
     val resizeHandleVisible = resizeBehaviour(ctx, id)
