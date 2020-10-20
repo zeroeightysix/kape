@@ -57,6 +57,10 @@ class Context private constructor(
         dirty = true
     }
 
+    fun dirtyIf(block: () -> Boolean) = dirtyIf(block())
+
+    fun dirtyIf(boolean: Boolean) = if (boolean) setDirty() else Unit
+
     override fun clone(): Context = Context(this.windowState, this.node)
 
     operator fun invoke(block: Context.() -> Unit) = block()

@@ -49,4 +49,17 @@ operator fun Vec2i.div(other: Vec2i) = Vec2i(this.x / other.x, this.y / other.y)
 @JvmName("divF")
 operator fun Vec2f.div(other: Vec2f) = Vec2f(this.x / other.x, this.y / other.y)
 
+/**
+ * Returns 'smaller than' (`-1`) if this vector has a smaller x and y value than `other`.
+ *
+ * Returns 'equal' (`0`) if this vector is equal to the other vector.
+ *
+ * Otherwise, returns 'greater than' (`1`)
+ */
+operator fun Vec2f.compareTo(other: Vec2f) = when {
+    this.x < other.x && this.y < other.y -> -1
+    this.x == other.x && this.y == other.y -> 0
+    else -> 1
+}
+
 fun Vec2d.toVec2f() = Vec2f(this.x.toFloat(), this.y.toFloat())
